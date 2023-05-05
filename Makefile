@@ -1,9 +1,9 @@
 CC = g++
 CXX = g++
 CXXFLAGS += -Wall -Wextra -Wpedantic -pedantic-errors -O2 -g
-OBJS = poligono.o
+OBJS = triangulate.o
 
-poligono : $(OBJS)
+triangulate : $(OBJS)
 
-poligono.o : poligono.cpp util.hpp
+triangulate.o : triangulate.cpp util.hpp
 
