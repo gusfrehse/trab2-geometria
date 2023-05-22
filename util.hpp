@@ -2,25 +2,27 @@
 #define UTIL_HPP
 
 #include <iostream>
+#include <cmath>
 
-template <typename T>
 class vec2 {
 public:
-    T x;
-    T y;
+    double x;
+    double y;
 
-    vec2(T x, T y) : x(x), y(y) {}
+    vec2() = default;
 
-    T length2() {
+    vec2(double x, double y) : x(x), y(y) {}
+
+    double length2() {
         return x * x + y * y;
     };
 
-    T length() {
+    double length() {
         return sqrt(length2());
     }
 
-    static vec2<T> read() {
-        T x, y;
+    static vec2 read() {
+        double x, y;
         std::cin >> x >> y;
         return vec2(x, y);
     };
@@ -29,37 +31,37 @@ public:
         std::cout << "(" << x << ", " << y << ")" << std::endl;
     }
     
-    vec2<T> operator-() const {
+    vec2 operator-() const {
         return vec2(-x, -y);
     }
 
-    vec2<T>& operator+=(const vec2<T>& rhs) {
+    vec2& operator+=(const vec2& rhs) {
         x += rhs.x;
         y += rhs.y;
         return *this;
     }
 
-    vec2<T>& operator-=(const vec2<T>& rhs) {
+    vec2& operator-=(const vec2& rhs) {
         x -= rhs.x;
         y -= rhs.y;
         return *this;
     }
 
-    friend vec2<T> operator+(vec2<T> lhs, const vec2<T> rhs) {
+    friend vec2 operator+(vec2 lhs, const vec2 rhs) {
         lhs += rhs;
         return lhs;
     }
 
-    friend vec2<T> operator-(vec2<T> lhs, const vec2<T> rhs) {
+    friend vec2 operator-(vec2 lhs, const vec2 rhs) {
         lhs -= rhs;
         return lhs;
     }
     
-    friend T dot(vec2<T>& a, vec2<T>& b) {
+    friend double dot(const vec2& a, const vec2& b) {
         return a.x * b.x + a.y * b.y;
     }
 
-    friend T det(vec2<T>& a, vec2<T>& b) {
+    friend double det(const vec2& a, const vec2& b) {
         return a.x * b.y - a.y * b.x;
     }
 };

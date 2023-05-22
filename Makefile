@@ -7,3 +7,5 @@ triangulate : $(OBJS)
 
 triangulate.o : triangulate.cpp util.hpp
 
+run : triangulate
+	./triangulate < input.txt
