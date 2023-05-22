@@ -46,17 +46,23 @@ float angle(int i) {
     return std::acos(dot(a, b) / (a.length() * b.length()));
 }
 
-void handleSplitVertex(int v, std::set<std::pair<edge, int>>& t) {
-    t.insert({})
+void handleSplitVertex(int v, std::set<edge>& t, std::vector<int>& helper) {
+    // TODO
 }
 
-void handleStartVertex(int v, std::set<std::pair<edge, int>>& t) {
+void handleStartVertex(int v, std::set<edge>& t, std::vector<int>& helper) {
+    t.insert({ v, (v + 1) % vertices.size() });
+    helper[v] = v;
 }
 
-void handleMergeVertex(int v, std::set<std::pair<edge, int>>& t) {
+void handleMergeVertex(int v, std::set<edge>& t, std::vector<int>& helper) {
+    // TODO
 }
 
-void handleEndVertex(int v, std::set<std::pair<edge, int>>& t) {
+void handleEndVertex(int v, std::set<edge>& t, std::vector<int>& helper) {
+    if (isMergeVertex(helper[(v - 1) % vertices.size()])) {
+        // TODO
+    }
 }
 
 bool isStartVertex(int v) {
