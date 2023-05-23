@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
-#include <deque>
+#include <list>
 #include <queue>
 #include <set>
 
@@ -22,16 +22,15 @@ void readVertices(int n, std::vector<vec2>& vertices) {
     }
 }
 
-void createPolygonDeque(int n, std::deque<edge>& polygon) {
-    polygon.resize(n);
-
+void createPolygonList(int n, std::list<edge>& polygon) {
     for (int i = 0; i < n; ++i) {
-        polygon[i] = { i, (i + 1) % n };
+        polygon.push_back({ i, (i + 1) % n });
     }
 }
 
 std::vector<vec2> vertices; // vertices of the polygon
-std::deque<edge> polygon; // edges of the polygon 
+std::list<edge> polygon; // edges of the polygon 
+std::vector<int> helper; // helper array
 
 std::pair<int, int> getNeighbours(int i) {
     return { (i - 1 + vertices.size()) % vertices.size(), (i + 1) % vertices.size()};
@@ -51,8 +50,6 @@ void handleSplitVertex(int v, std::set<edge>& t, std::vector<int>& helper) {
 }
 
 void handleStartVertex(int v, std::set<edge>& t, std::vector<int>& helper) {
-    t.insert({ v, (v + 1) % vertices.size() });
-    helper[v] = v;
 }
 
 void handleMergeVertex(int v, std::set<edge>& t, std::vector<int>& helper) {
@@ -65,45 +62,66 @@ void handleEndVertex(int v, std::set<edge>& t, std::vector<int>& helper) {
     }
 }
 
+bool isSplitVertex(int v) {
+    auto [prev, next] = getNeighbours(v);
+    vec2 a = vertices[prev] - vertices[v];
+    vec2 b = vertices[next] - vertices[v];
+
+    return (vertices[prev].y <= vertices[v].y && vertices[next].y <= vertices[v].y) && (det(a, b) > 0); 
+}
+
 bool isStartVertex(int v) {
     auto [prev, next] = getNeighbours(v);
     vec2 a = vertices[prev] - vertices[v];
     vec2 b = vertices[next] - vertices[v];
 
-    if ((vertices[prev].y <= vertices[v].y && vertices[next].y <= vertices[v].y) && (det(a, b) > 0))
-        return true;
-
-    return false;
+    return (vertices[prev].y <= vertices[v].y && vertices[next].y <= vertices[v].y) && (det(a, b) <= 0); 
 }
 
-void handleVertex(int v, std::set<std::pair<edge, int>>& t) {
+bool isMergeVertex(int v) {
     auto [prev, next] = getNeighbours(v);
     vec2 a = vertices[prev] - vertices[v];
     vec2 b = vertices[next] - vertices[v];
 
-    if (vertices[prev].y <= vertices[v].y && vertices[next].y <= vertices[v].y) {
-        if (det(a, b) > 0) {
-            // split vertex
-            handleSplitVertex(v, t);
-            //std::cout << "v = " << v << " = (" << vertices[v].x << ", " << vertices[v].y << ") split vertex!" << std::endl;
-        } else {
-            // start vertex
-            handleStartVertex(v, t);
-            //std::cout << "v = " << v << " = (" << vertices[v].x << ", " << vertices[v].y << ") start vertex!" << std::endl;
+    return (vertices[prev].y >= vertices[v].y && vertices[next].y >= vertices[v].y) && (det(a, b) > 0);
+}
+
+bool isEndVertex(int v) {
+    auto [prev, next] = getNeighbours(v);
+    vec2 a = vertices[prev] - vertices[v];
+    vec2 b = vertices[next] - vertices[v];
+
+    return (vertices[prev].y >= vertices[v].y && vertices[next].y >= vertices[v].y) && (det(a, b) <= 0);
+}
+
+edge getEdge(int v) {
+    return { v, (v + 1) % vertices.size() };
+}
+
+void handleVertex(int v, std::set<edge>& t, std::vector<int>& helper) {
+    if (isStartVertex(v)) {
+
+        t.insert(getEdge(v));
+        helper[v] = v;
+
+    } else if (isEndVertex(v)) {
+
+        if (isMergeVertex(helper[(v - 1) % vertices.size()])) {
+            // Insert diagonal in polygon
+            auto edge = { v, helper[(v - 1) % vertices.size()] };
+
+            for (auto it = polygon.begin(); it != polygon.end(); ++it) {
+                if (it->first == v) {
+                }
+            }
         }
-    } else if (vertices[prev].y >= vertices[v].y && vertices[next].y >= vertices[v].y) {
-        if (det(a, b) > 0) {
-            // merge vertex
-            handleMergeVertex(v, t);
-            //std::cout << "v = " << v << " = (" << vertices[v].x << ", " << vertices[v].y << ") merge vertex!" << std::endl;
-        } else {
-            // end vertex
-            handleEndVertex(v, t);
-            //std::cout << "v = " << v << " = (" << vertices[v].x << ", " << vertices[v].y << ") end vertex!" << std::endl;
-        }
-    } else {
-        // regular vertex
-        //std::cout << "v = " << v << " = (" << vertices[v].x << ", " << vertices[v].y << ") regular vertex!" << std::endl;
+        
+        t.erase(getEdge(v));
+        
+    } else if (isSplitVertex(v)) {
+
+    } else if (isMergeVertex(v)) {
+    } else { // Regular Vertex
     }
 }
 
@@ -114,7 +132,7 @@ int main() {
 
     readVertices(n, vertices);
 
-    createPolygonDeque(n, polygon);
+    createPolygonList(n, polygon);
 
     for (const auto& e : polygon) {
         std::cout << e.first << " " << e.second << std::endl;
@@ -139,7 +157,7 @@ int main() {
         return std::min(vertices[a.first.first].x, vertices[a.first.second].x) < std::min(vertices[b.first.first].x, vertices[b.first.second].x);
     };
 
-    std::set<std::pair<edge, int>> t;
+    std::set<edge> t;
 
     while (!pq.empty()) {
         int v = pq.top();
