@@ -32,14 +32,14 @@ public:
             halfEdges[2 * i + 1].twin = &halfEdges[2 * i];
             halfEdges[2 * i + 1].next = &halfEdges[realMod(2 * (i - 1), 2 * CCWConvexVertices.size())];
             halfEdges[2 * i + 1].prev = &halfEdges[realMod(2 * (i + 1), 2 * CCWConvexVertices.size())];
-            halfEdges[2 * i].incidentFace = &faces[0]; // TODO: Check if correct maybe another "outer face" is better
+            halfEdges[2 * i + 1].incidentFace = &faces[0]; // TODO: Check if correct maybe another "outer face" is better
         }
         
         faces[0].outerComponent = &halfEdges[0];
     }
     
     void addDiagonal() {
-        
+
     }
 };
 
