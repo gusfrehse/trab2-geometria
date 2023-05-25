@@ -1,5 +1,4 @@
-#ifndef UTIL_HPP
-#define UTIL_HPP
+#pragma once
 
 #include <iostream>
 #include <cmath>
@@ -64,6 +63,8 @@ public:
     friend double det(const vec2& a, const vec2& b) {
         return a.x * b.y - a.y * b.x;
     }
-};
 
-#endif
+    friend bool operator==(const vec2& a, const vec2& b) {
+        return a.x == b.x && a.y == b.y;
+    }
+};

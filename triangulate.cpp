@@ -7,6 +7,8 @@
 
 #include "util.hpp"
 
+#include "dcel.hpp"
+
 struct triangle {
     std::array<int, 3> vertices;
     std::array<int, 3> neighbours;
@@ -45,79 +47,53 @@ float angle(int i) {
     return std::acos(dot(a, b) / (a.length() * b.length()));
 }
 
-void handleSplitVertex(int v, std::set<edge>& t, std::vector<int>& helper) {
-    // TODO
+bool isSplitVertex(DCELVertex *v) {
+    DCELVertex *prev = v->incidentEdge->prev->origin;
+    DCELVertex *next = v->incidentEdge->twin->origin;
+
+    vec2 a = prev->coords - v->coords;
+    vec2 b = next->coords - v->coords;
+
+    return (prev->coords.y <= v->coords.y && next->coords.y <= v->coords.y) && (det(a, b) > 0); 
 }
 
-void handleStartVertex(int v, std::set<edge>& t, std::vector<int>& helper) {
+bool isStartVertex(DCELVertex *v) {
+    DCELVertex *prev = v->incidentEdge->prev->origin;
+    DCELVertex *next = v->incidentEdge->twin->origin;
+
+    vec2 a = prev->coords - v->coords;
+    vec2 b = next->coords - v->coords;
+
+    return (prev->coords.y <= v->coords.y && next->coords.y <= v->coords.y) && (det(a, b) <= 0); 
 }
 
-void handleMergeVertex(int v, std::set<edge>& t, std::vector<int>& helper) {
-    // TODO
+bool isMergeVertex(DCELVertex *v) {
+    DCELVertex *prev = v->incidentEdge->prev->origin;
+    DCELVertex *next = v->incidentEdge->twin->origin;
+
+    vec2 a = prev->coords - v->coords;
+    vec2 b = next->coords - v->coords;
+
+    return (prev->coords.y >= v->coords.y && next->coords.y >= v->coords.y) && (det(a, b) > 0); 
 }
 
-void handleEndVertex(int v, std::set<edge>& t, std::vector<int>& helper) {
-    if (isMergeVertex(helper[(v - 1) % vertices.size()])) {
-        // TODO
-    }
-}
+bool isEndVertex(DCELVertex *v) {
+    DCELVertex *prev = v->incidentEdge->prev->origin;
+    DCELVertex *next = v->incidentEdge->twin->origin;
 
-bool isSplitVertex(int v) {
-    auto [prev, next] = getNeighbours(v);
-    vec2 a = vertices[prev] - vertices[v];
-    vec2 b = vertices[next] - vertices[v];
+    vec2 a = prev->coords - v->coords;
+    vec2 b = next->coords - v->coords;
 
-    return (vertices[prev].y <= vertices[v].y && vertices[next].y <= vertices[v].y) && (det(a, b) > 0); 
-}
-
-bool isStartVertex(int v) {
-    auto [prev, next] = getNeighbours(v);
-    vec2 a = vertices[prev] - vertices[v];
-    vec2 b = vertices[next] - vertices[v];
-
-    return (vertices[prev].y <= vertices[v].y && vertices[next].y <= vertices[v].y) && (det(a, b) <= 0); 
-}
-
-bool isMergeVertex(int v) {
-    auto [prev, next] = getNeighbours(v);
-    vec2 a = vertices[prev] - vertices[v];
-    vec2 b = vertices[next] - vertices[v];
-
-    return (vertices[prev].y >= vertices[v].y && vertices[next].y >= vertices[v].y) && (det(a, b) > 0);
-}
-
-bool isEndVertex(int v) {
-    auto [prev, next] = getNeighbours(v);
-    vec2 a = vertices[prev] - vertices[v];
-    vec2 b = vertices[next] - vertices[v];
-
-    return (vertices[prev].y >= vertices[v].y && vertices[next].y >= vertices[v].y) && (det(a, b) <= 0);
+    return (prev->coords.y >= v->coords.y && next->coords.y >= v->coords.y) && (det(a, b) <= 0); 
 }
 
 edge getEdge(int v) {
     return { v, (v + 1) % vertices.size() };
 }
 
-void handleVertex(int v, std::set<edge>& t, std::vector<int>& helper) {
+void handleVertex(DCELVertex *v, std::vector<DCELVertex *>& helper) {
     if (isStartVertex(v)) {
-
-        t.insert(getEdge(v));
-        helper[v] = v;
-
     } else if (isEndVertex(v)) {
-
-        if (isMergeVertex(helper[(v - 1) % vertices.size()])) {
-            // Insert diagonal in polygon
-            auto edge = { v, helper[(v - 1) % vertices.size()] };
-
-            for (auto it = polygon.begin(); it != polygon.end(); ++it) {
-                if (it->first == v) {
-                }
-            }
-        }
-        
-        t.erase(getEdge(v));
-        
     } else if (isSplitVertex(v)) {
 
     } else if (isMergeVertex(v)) {
@@ -132,25 +108,30 @@ int main() {
 
     readVertices(n, vertices);
 
+    DCEL dcel(vertices);
+
     createPolygonList(n, polygon);
 
     for (const auto& e : polygon) {
         std::cout << e.first << " " << e.second << std::endl;
     }
 
-    auto pqCmp = [](int a, int b) {
-        if (vertices[a].y == vertices[b].y) {
-            return vertices[a].x < vertices[b].x;
+    auto pqCmp = [](DCELVertex *a, DCELVertex *b) {
+        if (a->coords.y == b->coords.y) {
+            return a->coords.x < b->coords.x;
         }
 
-        return vertices[a].y < vertices[b].y;
+        return a->coords.y < b->coords.y;
     };
 
-    std::priority_queue<int, std::vector<int>, decltype(pqCmp)> pq(pqCmp);
+    std::priority_queue<DCELVertex*, std::vector<DCELVertex*>, decltype(pqCmp)> pq(pqCmp);
 
-    for (int i = 0; i < n; ++i) {
-        pq.push(i);
-    }
+    DCELVertex* start, *curr;
+    start = curr = dcel.start();
+    do {
+        pq.push(curr);
+        curr = curr->incidentEdge->twin->origin;
+    } while (curr != start);
 
     auto setCmp = [](const std::pair<edge, int>& a, const std::pair<edge, int>& b) {
         // TODO: Check if this is correct
@@ -159,11 +140,13 @@ int main() {
 
     std::set<edge> t;
 
+    std::vector<DCELVertex *> helper(n);
+
     while (!pq.empty()) {
-        int v = pq.top();
+        DCELVertex *v = pq.top();
         pq.pop();
 
-        handleVertex(v, t);
+        handleVertex(v, helper);
     }
 
     return 0;
