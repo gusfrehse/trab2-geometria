@@ -11,6 +11,7 @@ struct DCELFace;
 
 struct DCELVertex {
     vec2 coords;
+    int id;
     DCELHalfEdge *incidentEdge = nullptr;
 };
 

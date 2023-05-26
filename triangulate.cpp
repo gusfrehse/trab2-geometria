@@ -30,23 +30,6 @@ void createPolygonList(int n, std::list<edge>& polygon) {
     }
 }
 
-std::vector<vec2> vertices; // vertices of the polygon
-std::list<edge> polygon; // edges of the polygon 
-std::vector<int> helper; // helper array
-
-std::pair<int, int> getNeighbours(int i) {
-    return { (i - 1 + vertices.size()) % vertices.size(), (i + 1) % vertices.size()};
-}
-
-float angle(int i) {
-    auto [prev, next] = getNeighbours(i);
-
-    vec2 a = vertices[prev] - vertices[i];
-    vec2 b = vertices[next] - vertices[i];
-
-    return std::acos(dot(a, b) / (a.length() * b.length()));
-}
-
 bool isSplitVertex(DCELVertex *v) {
     DCELVertex *prev = v->incidentEdge->prev->origin;
     DCELVertex *next = v->incidentEdge->twin->origin;
@@ -87,15 +70,28 @@ bool isEndVertex(DCELVertex *v) {
     return (prev->coords.y >= v->coords.y && next->coords.y >= v->coords.y) && (det(a, b) <= 0); 
 }
 
-edge getEdge(int v) {
-    return { v, (v + 1) % vertices.size() };
-}
+auto setCmp = [](DCELHalfEdge *a, DCELHalfEdge *b) {
+    // TODO: Check if this is correct
+    return std::min(a->origin->coords.x, a->twin->origin->coords.x) < std::min(b->origin->coords.x, b->twin->origin->coords.x);
+};
 
-void handleVertex(DCELVertex *v, std::vector<DCELVertex *>& helper) {
+std::set<DCELHalfEdge *, decltype(setCmp)> t(setCmp);
+
+std::vector<DCELVertex *> helper;
+
+void handleVertex(DCELVertex *v) {
     if (isStartVertex(v)) {
+        t.insert(v->incidentEdge);
+        helper[v->id] = v;
     } else if (isEndVertex(v)) {
-    } else if (isSplitVertex(v)) {
+        int eIminus1 = v->incidentEdge->prev->origin->id;
 
+        if (isMergeVertex(helper[eIminus1])) {
+            // TODO
+        }
+        
+        t.erase(v->incidentEdge->prev);
+    } else if (isSplitVertex(v)) {
     } else if (isMergeVertex(v)) {
     } else { // Regular Vertex
     }
@@ -125,6 +121,8 @@ int main() {
     };
 
     std::priority_queue<DCELVertex*, std::vector<DCELVertex*>, decltype(pqCmp)> pq(pqCmp);
+    
+    helper.resize(n);
 
     DCELVertex* start, *curr;
     start = curr = dcel.start();
@@ -133,20 +131,11 @@ int main() {
         curr = curr->incidentEdge->twin->origin;
     } while (curr != start);
 
-    auto setCmp = [](const std::pair<edge, int>& a, const std::pair<edge, int>& b) {
-        // TODO: Check if this is correct
-        return std::min(vertices[a.first.first].x, vertices[a.first.second].x) < std::min(vertices[b.first.first].x, vertices[b.first.second].x);
-    };
-
-    std::set<edge> t;
-
-    std::vector<DCELVertex *> helper(n);
-
     while (!pq.empty()) {
         DCELVertex *v = pq.top();
         pq.pop();
 
-        handleVertex(v, helper);
+        handleVertex(v);
     }
 
     return 0;

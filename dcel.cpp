@@ -16,6 +16,7 @@ DCEL::DCEL(std::vector<vec2> CCWConvexVertices) {
     for (int i = 0; i < CCWConvexVertices.size(); ++i) {
         vertices[i].coords = CCWConvexVertices[i];
         vertices[i].incidentEdge = &halfEdges[2 * i];
+        vertices[i].id = i;
 
         halfEdges[2 * i].origin = &vertices[i];
         halfEdges[2 * i].twin = &halfEdges[2 * i + 1];

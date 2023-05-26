@@ -1,3 +1,6 @@
-triangulate*
+triangulate
 .vscode
+*.o
+test
+
 
