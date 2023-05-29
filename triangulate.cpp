@@ -24,12 +24,6 @@ void readVertices(int n, std::vector<vec2>& vertices) {
     }
 }
 
-void createPolygonList(int n, std::list<edge>& polygon) {
-    for (int i = 0; i < n; ++i) {
-        polygon.push_back({ i, (i + 1) % n });
-    }
-}
-
 bool isSplitVertex(DCELVertex *v) {
     DCELVertex *prev = v->incidentEdge->prev->origin;
     DCELVertex *next = v->incidentEdge->twin->origin;
@@ -70,16 +64,16 @@ bool isEndVertex(DCELVertex *v) {
     return (prev->coords.y >= v->coords.y && next->coords.y >= v->coords.y) && (det(a, b) <= 0); 
 }
 
-auto setCmp = [](DCELHalfEdge *a, DCELHalfEdge *b) {
+auto setCmp = [&dcel](DCELHalfEdge *a, DCELHalfEdge *b) {
     // TODO: Check if this is correct
-    return std::min(a->origin->coords.x, a->twin->origin->coords.x) < std::min(b->origin->coords.x, b->twin->origin->coords.x);
+    return std::min(dcel.origin(a)->coords.x, a->twin->origin->coords.x) < std::min(b->origin->coords.x, b->twin->origin->coords.x);
 };
 
 std::set<DCELHalfEdge *, decltype(setCmp)> t(setCmp);
 
 std::vector<DCELVertex *> helper;
 
-void handleVertex(DCELVertex *v) {
+void handleVertex(DCEL *dcel, DCELVertex *v) {
     if (isStartVertex(v)) {
         t.insert(v->incidentEdge);
         helper[v->id] = v;
@@ -87,9 +81,10 @@ void handleVertex(DCELVertex *v) {
         int eIminus1 = v->incidentEdge->prev->origin->id;
 
         if (isMergeVertex(helper[eIminus1])) {
-            // TODO
+            // TODO insert diagonal from v to helper[eIminus1]
+            dcel->connect(v, helper[eIminus1]);
         }
-        
+
         t.erase(v->incidentEdge->prev);
     } else if (isSplitVertex(v)) {
     } else if (isMergeVertex(v)) {
@@ -102,21 +97,16 @@ int main() {
 
     std::cin >> n;
 
+    std::vector<vec2> vertices;
+
     readVertices(n, vertices);
 
     DCEL dcel(vertices);
-
-    createPolygonList(n, polygon);
-
-    for (const auto& e : polygon) {
-        std::cout << e.first << " " << e.second << std::endl;
-    }
 
     auto pqCmp = [](DCELVertex *a, DCELVertex *b) {
         if (a->coords.y == b->coords.y) {
             return a->coords.x < b->coords.x;
         }
-
         return a->coords.y < b->coords.y;
     };
 
@@ -125,6 +115,8 @@ int main() {
     helper.resize(n);
 
     DCELVertex* start, *curr;
+    
+    // Add vertices to queue
     start = curr = dcel.start();
     do {
         pq.push(curr);

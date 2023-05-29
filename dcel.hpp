@@ -7,33 +7,40 @@
 
 struct DCELHalfEdge;
 struct DCELVertex;
-struct DCELFace;
+
+using HalfEdgeId = int;
+using VertexId = int;
 
 struct DCELVertex {
     vec2 coords;
     int id;
-    DCELHalfEdge *incidentEdge = nullptr;
-};
-
-struct DCELFace {
-    DCELHalfEdge *outerComponent = nullptr;
+    HalfEdgeId incidentEdge = -1;
 };
 
 struct DCELHalfEdge {
-    DCELVertex *origin = nullptr;
-    DCELHalfEdge *twin = nullptr;
-    DCELFace *incidentFace = nullptr;
+    VertexId origin = -1;
+    HalfEdgeId twin = -1;
     
-    DCELHalfEdge *next = nullptr, *prev = nullptr;
+    HalfEdgeId next = -1, prev = -1;
 };
 
 class DCEL {
     std::vector<DCELVertex> vertices;
     std::vector<DCELHalfEdge> halfEdges;
-    std::vector<DCELFace> faces;
 
 public:
     DCEL(std::vector<vec2> CCWConvexVertices);
-    DCELVertex *start();
-    DCELVertex *end();
+    VertexId start();
+    VertexId end();
+
+    DCELVertex& getVertex(VertexId id);
+    DCELHalfEdge& getHalfEdge(HalfEdgeId id);
+
+    HalfEdgeId& incidentEdge(VertexId id) { vertices[id].incidentEdge; };
+    HalfEdgeId& next(HalfEdgeId id) { return halfEdges[id].next; }
+    HalfEdgeId& prev(HalfEdgeId id) { return halfEdges[id].prev;}
+    HalfEdgeId& twin(HalfEdgeId id) { return halfEdges[id].twin;}
+    VertexId origin(HalfEdgeId id) { return halfEdges[id].origin;}
+
+    void connect(HalfEdgeId a, HalfEdgeId b);
 };
