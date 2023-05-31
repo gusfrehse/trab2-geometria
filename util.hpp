@@ -26,10 +26,6 @@ public:
         return vec2(x, y);
     };
 
-    void print() {
-        std::cout << "(" << x << ", " << y << ")" << std::endl;
-    }
-    
     vec2 operator-() const {
         return vec2(-x, -y);
     }
@@ -66,5 +62,10 @@ public:
 
     friend bool operator==(const vec2& a, const vec2& b) {
         return a.x == b.x && a.y == b.y;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const vec2& v) {
+        os << "(" << v.x << ", " << v.y << ")";
+        return os;
     }
 };

@@ -11,31 +11,54 @@ TEST(DCELTests, EmptyVectorConstructor) {
 }
 
 TEST(DCELTests, TriangleTest) {
-    std::vector<vec2> vertices = {vec2(0, 0), vec2(1, 0), vec2(0, 1)};
+    std::vector<vec2> vertices = { vec2(0, 0), vec2(1, 0), vec2(0, 1) };
+
+    DCEL dcel(vertices);
+
+    // TODO
+}
+
+TEST(DCELTests, QuadTest) {
+    std::vector<vec2> vertices = { vec2(0, 0), vec2(1, 0), vec2(1, 1), vec2(0, 1) };
 
     DCEL dcel(vertices);
 
     EXPECT_EQ(dcel.getVertex(dcel.start()).coords, vec2(0, 0));
-    EXPECT_EQ(dcel.getVertex(dcel.origin(dcel.twin(dcel.incidentEdge(dcel.start())))).coords.x, 1.0f);
-    EXPECT_EQ(dcel.getVertex(dcel.origin(dcel.twin(dcel.incidentEdge(dcel.start())))).coords.y, 0.0f);
-    EXPECT_EQ(dcel.getVertex(dcel.end()).coords, vec2(0.0f, 1.0f));
+
+    // test next
+    EXPECT_EQ(dcel.getVertex(dcel.next(dcel.start())).coords, vec2(1.0f, 0.0f));
+    EXPECT_EQ(dcel.getVertex(dcel.next(dcel.next(dcel.start()))).coords, vec2(1.0f, 1.0f));
+    EXPECT_EQ(dcel.getVertex(dcel.next(dcel.next(dcel.next(dcel.start())))).coords, vec2(0.0f, 1.0f));
+    EXPECT_EQ(dcel.next(dcel.next(dcel.next(dcel.next(dcel.start())))), dcel.start());
+
+    // test prev
+    EXPECT_EQ(dcel.getVertex(dcel.prev(dcel.start())).coords, vec2(0.0f, 1.0f));
+    EXPECT_EQ(dcel.getVertex(dcel.prev(dcel.prev(dcel.start()))).coords, vec2(1.0f, 1.0f));
+    EXPECT_EQ(dcel.getVertex(dcel.prev(dcel.prev(dcel.prev(dcel.start())))).coords, vec2(1.0f, 0.0f));
+    EXPECT_EQ(dcel.prev(dcel.prev(dcel.prev(dcel.prev(dcel.start())))), dcel.start());
 }
 
 TEST(DCELTests, ConnectTest) {
-    std::vector<vec2> vertices = {vec2(0, 0), vec2(1, 0), vec2(1, 0), vec2(0, 1)};
+    std::vector<vec2> vertices = { vec2(0, 0), vec2(1, 0), vec2(1, 0), vec2(0, 1) };
 
     DCEL dcel(vertices);
 
+    VertexId curr = dcel.start();
+
+    std::cout << "Before connecting: \n";
+    do {
+        std::cout << "Vertex: " << dcel.getVertex(dcel.origin(curr)).coords << std::endl;
+        curr = dcel.next(curr);
+    } while (curr != dcel.start());
 
     dcel.connect(dcel.start(), dcel.origin(dcel.next(dcel.next(dcel.incidentEdge(dcel.start())))));
 
-    VertexId start = dcel.start();
-    VertexId curr = dcel.start();
+    curr = dcel.start();
 
+    std::cout << "After connecting: \n";
     do {
-        std::cout << "Vertex: ";
-        dcel.getVertex(curr).coords.print();
-        curr = dcel.origin(dcel.next(dcel.twin(dcel.incidentEdge(curr))));
+        std::cout << "Vertex: " << dcel.getVertex(dcel.origin(curr)).coords << std::endl;
+        curr = dcel.next(curr);
     } while (curr != dcel.start());
 
     // first vertex

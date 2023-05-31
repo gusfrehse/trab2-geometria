@@ -29,12 +29,13 @@ DCEL::DCEL(std::vector<vec2> CCWConvexVertices) {
     }
 }
 
-VertexId DCEL::start() {
+HalfEdgeId DCEL::start() {
     return 0;
 }
 
-VertexId DCEL::end() {
-    return vertices.size() - 1;
+// TODO: this is wrong shouldn't be used. (use start() instead and check if it's the same vertex)
+HalfEdgeId DCEL::end() {
+    return halfEdges.size() - 1;
 }
 
 DCELVertex& DCEL::getVertex(VertexId id)

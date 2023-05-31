@@ -13,6 +13,7 @@ test : $(OBJS) $(TEST_OBJS)
 
 triangulate.o : triangulate.cpp util.hpp
 dcel.o : dcel.cpp dcel.hpp util.hpp
+dcel_tests.o: dcel_tests.cpp dcel.hpp util.hpp
 
 run : triangulate
 	./triangulate < input.txt
