@@ -36,7 +36,7 @@ public:
     DCELVertex& getVertex(VertexId id);
     DCELHalfEdge& getHalfEdge(HalfEdgeId id);
 
-    HalfEdgeId& incidentEdge(VertexId id) { vertices[id].incidentEdge; };
+    HalfEdgeId& incidentEdge(VertexId id) { return vertices[id].incidentEdge; };
     HalfEdgeId& next(HalfEdgeId id) { return halfEdges[id].next; }
     HalfEdgeId& prev(HalfEdgeId id) { return halfEdges[id].prev;}
     HalfEdgeId& twin(HalfEdgeId id) { return halfEdges[id].twin;}

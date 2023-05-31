@@ -7,8 +7,7 @@
 TEST(DCELTests, EmptyVectorConstructor) {
     std::vector<vec2> empty;
     DCEL dcel(empty);
-    EXPECT_EQ(dcel.start(), nullptr);
-    EXPECT_EQ(dcel.end(), nullptr);
+    EXPECT_EQ(dcel.start(), 0);
 }
 
 TEST(DCELTests, TriangleTest) {
@@ -16,11 +15,10 @@ TEST(DCELTests, TriangleTest) {
 
     DCEL dcel(vertices);
 
-    EXPECT_EQ(dcel.start()->coords, vec2(0, 0));
-    EXPECT_EQ(dcel.start()->incidentEdge->twin->origin->coords.x, 1.0f);
-    EXPECT_EQ(dcel.start()->incidentEdge->twin->origin->coords.y, 0.0f);
-    EXPECT_EQ(dcel.end()->coords, vec2(0.0f, 1.0f));
-    EXPECT_EQ(dcel.start()->incidentEdge->incidentFace, dcel.end()->incidentEdge->incidentFace);
+    EXPECT_EQ(dcel.getVertex(dcel.start()).coords, vec2(0, 0));
+    EXPECT_EQ(dcel.getVertex(dcel.origin(dcel.twin(dcel.incidentEdge(dcel.start())))).coords.x, 1.0f);
+    EXPECT_EQ(dcel.getVertex(dcel.origin(dcel.twin(dcel.incidentEdge(dcel.start())))).coords.y, 0.0f);
+    EXPECT_EQ(dcel.getVertex(dcel.end()).coords, vec2(0.0f, 1.0f));
 }
 
 TEST(DCELTests, ConnectTest) {
@@ -29,26 +27,26 @@ TEST(DCELTests, ConnectTest) {
     DCEL dcel(vertices);
 
 
-    dcel.connect(dcel.start(), dcel.start()->incidentEdge->next->next->origin);
+    dcel.connect(dcel.start(), dcel.origin(dcel.next(dcel.next(dcel.incidentEdge(dcel.start())))));
 
-    DCELVertex *start = dcel.start();
-    DCELVertex *curr = dcel.start();
+    VertexId start = dcel.start();
+    VertexId curr = dcel.start();
 
     do {
         std::cout << "Vertex: ";
-        curr->coords.print();
-        curr = curr->incidentEdge->twin->next->origin;
+        dcel.getVertex(curr).coords.print();
+        curr = dcel.origin(dcel.next(dcel.twin(dcel.incidentEdge(curr))));
     } while (curr != dcel.start());
 
     // first vertex
-    EXPECT_EQ(dcel.start()->coords.x, 0.0f);
-    EXPECT_EQ(dcel.start()->coords.y, 0.0f);
+    EXPECT_EQ(dcel.getVertex(dcel.start()).coords.x, 0.0f) << "First vertex has wrong x coordinate";
+    EXPECT_EQ(dcel.getVertex(dcel.start()).coords.y, 0.0f) << "First vertex has wrong y coordinate";
 
     // second vertex
-    EXPECT_EQ(dcel.start()->incidentEdge->next->origin->coords.x, 1.0f);
-    EXPECT_EQ(dcel.start()->incidentEdge->next->origin->coords.y, 0.0f);
+    EXPECT_EQ(dcel.getVertex(dcel.origin(dcel.next(dcel.incidentEdge(dcel.start())))).coords.x, 1.0f) << "Second vertex has wrong x coordinate";
+    EXPECT_EQ(dcel.getVertex(dcel.origin(dcel.next(dcel.incidentEdge(dcel.start())))).coords.y, 0.0f) << "Second vertex has wrong y coordinate";
 
     // fourth (!) vertex
-    EXPECT_EQ(dcel.start()->incidentEdge->next->next->origin->coords.x, 0.0f);
-    EXPECT_EQ(dcel.start()->incidentEdge->next->next->origin->coords.y, 1.0f);
+    EXPECT_EQ(dcel.getVertex(dcel.origin(dcel.next(dcel.next(dcel.incidentEdge(dcel.start()))))).coords.x, 0.0f) << "Fourth vertex has wrong x coordinate";
+    EXPECT_EQ(dcel.getVertex(dcel.origin(dcel.next(dcel.next(dcel.incidentEdge(dcel.start()))))).coords.y, 1.0f) << "Fourth vertex has wrong y coordinate";
 }

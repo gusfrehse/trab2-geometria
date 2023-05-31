@@ -24,70 +24,80 @@ void readVertices(int n, std::vector<vec2>& vertices) {
     }
 }
 
-bool isSplitVertex(DCELVertex *v) {
-    DCELVertex *prev = v->incidentEdge->prev->origin;
-    DCELVertex *next = v->incidentEdge->twin->origin;
+bool isSplitVertex(DCEL& dcel, VertexId v) {
+    VertexId prev = dcel.origin(dcel.prev(dcel.incidentEdge(v)));
+    VertexId next = dcel.origin(dcel.twin(dcel.incidentEdge(v)));
 
-    vec2 a = prev->coords - v->coords;
-    vec2 b = next->coords - v->coords;
+    vec2 prevCoords = dcel.getVertex(prev).coords;
+    vec2 nextCoords = dcel.getVertex(next).coords;
+    vec2 vCoords = dcel.getVertex(v).coords;
 
-    return (prev->coords.y <= v->coords.y && next->coords.y <= v->coords.y) && (det(a, b) > 0); 
+    vec2 a = prevCoords - vCoords;
+    vec2 b = nextCoords - vCoords;
+
+    return (prevCoords.y <= vCoords.y && nextCoords.y <= vCoords.y) && (det(a, b) > 0); 
 }
 
-bool isStartVertex(DCELVertex *v) {
-    DCELVertex *prev = v->incidentEdge->prev->origin;
-    DCELVertex *next = v->incidentEdge->twin->origin;
+bool isStartVertex(DCEL& dcel, VertexId v) {
+    VertexId prev = dcel.origin(dcel.prev(dcel.incidentEdge(v)));
+    VertexId next = dcel.origin(dcel.twin(dcel.incidentEdge(v)));
 
-    vec2 a = prev->coords - v->coords;
-    vec2 b = next->coords - v->coords;
+    vec2 prevCoords = dcel.getVertex(prev).coords;
+    vec2 nextCoords = dcel.getVertex(next).coords;
+    vec2 vCoords = dcel.getVertex(v).coords;
 
-    return (prev->coords.y <= v->coords.y && next->coords.y <= v->coords.y) && (det(a, b) <= 0); 
+    vec2 a = prevCoords - vCoords;
+    vec2 b = nextCoords - vCoords;
+
+    return (prevCoords.y <= vCoords.y && nextCoords.y <= vCoords.y) && (det(a, b) <= 0); 
 }
 
-bool isMergeVertex(DCELVertex *v) {
-    DCELVertex *prev = v->incidentEdge->prev->origin;
-    DCELVertex *next = v->incidentEdge->twin->origin;
+bool isMergeVertex(DCEL& dcel, VertexId v) {
+    VertexId prev = dcel.origin(dcel.prev(dcel.incidentEdge(v)));
+    VertexId next = dcel.origin(dcel.twin(dcel.incidentEdge(v)));
 
-    vec2 a = prev->coords - v->coords;
-    vec2 b = next->coords - v->coords;
+    vec2 prevCoords = dcel.getVertex(prev).coords;
+    vec2 nextCoords = dcel.getVertex(next).coords;
+    vec2 vCoords = dcel.getVertex(v).coords;
 
-    return (prev->coords.y >= v->coords.y && next->coords.y >= v->coords.y) && (det(a, b) > 0); 
+    vec2 a = prevCoords - vCoords;
+    vec2 b = nextCoords - vCoords;
+
+    return (prevCoords.y >= vCoords.y && nextCoords.y >= vCoords.y) && (det(a, b) > 0); 
 }
 
-bool isEndVertex(DCELVertex *v) {
-    DCELVertex *prev = v->incidentEdge->prev->origin;
-    DCELVertex *next = v->incidentEdge->twin->origin;
+bool isEndVertex(DCEL& dcel, VertexId v) {
+    VertexId prev = dcel.origin(dcel.prev(dcel.incidentEdge(v)));
+    VertexId next = dcel.origin(dcel.twin(dcel.incidentEdge(v)));
 
-    vec2 a = prev->coords - v->coords;
-    vec2 b = next->coords - v->coords;
+    vec2 prevCoords = dcel.getVertex(prev).coords;
+    vec2 nextCoords = dcel.getVertex(next).coords;
+    vec2 vCoords = dcel.getVertex(v).coords;
 
-    return (prev->coords.y >= v->coords.y && next->coords.y >= v->coords.y) && (det(a, b) <= 0); 
+    vec2 a = prevCoords - vCoords;
+    vec2 b = nextCoords - vCoords;
+
+    return (prevCoords.y >= vCoords.y && nextCoords.y >= vCoords.y) && (det(a, b) <= 0); 
 }
 
-auto setCmp = [&dcel](DCELHalfEdge *a, DCELHalfEdge *b) {
-    // TODO: Check if this is correct
-    return std::min(dcel.origin(a)->coords.x, a->twin->origin->coords.x) < std::min(b->origin->coords.x, b->twin->origin->coords.x);
-};
+std::vector<VertexId> helper;
+std::set<HalfEdgeId> t;
 
-std::set<DCELHalfEdge *, decltype(setCmp)> t(setCmp);
+void handleVertex(DCEL &dcel, VertexId v) {
+    if (isStartVertex(dcel, v)) {
+        t.insert(dcel.incidentEdge(v));
+        helper[v] = v;
+    } else if (isEndVertex(dcel, v)) {
+        int eIminus1 = dcel.origin(dcel.prev(dcel.incidentEdge(v)));
 
-std::vector<DCELVertex *> helper;
-
-void handleVertex(DCEL *dcel, DCELVertex *v) {
-    if (isStartVertex(v)) {
-        t.insert(v->incidentEdge);
-        helper[v->id] = v;
-    } else if (isEndVertex(v)) {
-        int eIminus1 = v->incidentEdge->prev->origin->id;
-
-        if (isMergeVertex(helper[eIminus1])) {
+        if (isMergeVertex(dcel, helper[eIminus1])) {
             // TODO insert diagonal from v to helper[eIminus1]
-            dcel->connect(v, helper[eIminus1]);
+            dcel.connect(v, helper[eIminus1]);
         }
 
-        t.erase(v->incidentEdge->prev);
-    } else if (isSplitVertex(v)) {
-    } else if (isMergeVertex(v)) {
+        t.erase(dcel.prev(dcel.incidentEdge(v)));
+    } else if (isSplitVertex(dcel, v)) {
+    } else if (isMergeVertex(dcel, v)) {
     } else { // Regular Vertex
     }
 }
@@ -103,31 +113,34 @@ int main() {
 
     DCEL dcel(vertices);
 
-    auto pqCmp = [](DCELVertex *a, DCELVertex *b) {
-        if (a->coords.y == b->coords.y) {
-            return a->coords.x < b->coords.x;
+    auto pqCmp = [&dcel](VertexId a, VertexId b) {
+        vec2 aCoords = dcel.getVertex(a).coords;
+        vec2 bCoords = dcel.getVertex(b).coords;
+
+        if (aCoords.y == bCoords.y) {
+            return aCoords.x < bCoords.x;
         }
-        return a->coords.y < b->coords.y;
+        return aCoords.y < bCoords.y;
     };
 
-    std::priority_queue<DCELVertex*, std::vector<DCELVertex*>, decltype(pqCmp)> pq(pqCmp);
+    std::priority_queue<VertexId, std::vector<VertexId>, decltype(pqCmp)> pq(pqCmp);
     
     helper.resize(n);
 
-    DCELVertex* start, *curr;
+    VertexId start, curr;
     
     // Add vertices to queue
     start = curr = dcel.start();
     do {
         pq.push(curr);
-        curr = curr->incidentEdge->twin->origin;
+        curr = dcel.origin(dcel.twin(dcel.incidentEdge(curr)));
     } while (curr != start);
 
     while (!pq.empty()) {
-        DCELVertex *v = pq.top();
+        VertexId v = pq.top();
         pq.pop();
 
-        handleVertex(v);
+        handleVertex(dcel, v);
     }
 
     return 0;
