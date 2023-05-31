@@ -49,6 +49,7 @@ DCELHalfEdge& DCEL::getHalfEdge(HalfEdgeId id)
 }
 
 void DCEL::connect(HalfEdgeId a, HalfEdgeId b) {
+    // TODO: Fix this
     halfEdges.push_back({});
     halfEdges.push_back({});
 
@@ -66,4 +67,9 @@ void DCEL::connect(HalfEdgeId a, HalfEdgeId b) {
 
     prev(a) = newA;
     prev(b) = newB;
+}
+
+std::ostream& operator<<(std::ostream& os, const DCELHalfEdge& halfEdge) {
+    os << "HalfEdge { origin = " << halfEdge.origin << ", twin  = " << halfEdge.twin << ", next = " << halfEdge.next << ", prev = " << halfEdge.prev << " }";
+    return os;
 }

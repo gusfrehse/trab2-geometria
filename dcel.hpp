@@ -22,6 +22,8 @@ struct DCELHalfEdge {
     HalfEdgeId twin = -1;
     
     HalfEdgeId next = -1, prev = -1;
+
+    friend std::ostream& operator<<(std::ostream& os, const DCELHalfEdge& halfEdge);
 };
 
 class DCEL {
