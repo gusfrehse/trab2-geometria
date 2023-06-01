@@ -19,14 +19,6 @@ TEST(DCELTests, EmptyVectorConstructor) {
     EXPECT_EQ(dcel.start(), 0);
 }
 
-TEST(DCELTests, TriangleTest) {
-    std::vector<vec2> vertices = { vec2(0, 0), vec2(1, 0), vec2(0, 1) };
-
-    DCEL dcel(vertices);
-
-    // TODO
-}
-
 TEST(DCELTests, QuadTest) {
     std::vector<vec2> vertices = { vec2(0, 0), vec2(1, 0), vec2(1, 1), vec2(0, 1) };
 
@@ -35,10 +27,10 @@ TEST(DCELTests, QuadTest) {
     EXPECT_EQ(dcel.getVertex(dcel.start()).coords, vec2(0, 0));
 
     // test next
-    EXPECT_EQ(dcel.getVertex(dcel.origin(dcel.next(dcel.start()))).coords, vec2(1.0f, 0.0f));
-    EXPECT_EQ(dcel.getVertex(dcel.origin(dcel.next(dcel.next(dcel.start())))).coords, vec2(1.0f, 1.0f));
-    EXPECT_EQ(dcel.getVertex(dcel.origin(dcel.next(dcel.next(dcel.next(dcel.start()))))).coords, vec2(0.0f, 1.0f));
-    EXPECT_EQ(dcel.next(dcel.origin(dcel.next(dcel.next(dcel.next(dcel.start()))))), dcel.start());
+    EXPECT_EQ(dcel.getVertex(dcel.origin(dcel.next(dcel.incidentEdge(dcel.start())))).coords, vec2(1.0f, 0.0f));
+    EXPECT_EQ(dcel.getVertex(dcel.origin(dcel.next(dcel.next(dcel.incidentEdge(dcel.start()))))).coords, vec2(1.0f, 1.0f));
+    EXPECT_EQ(dcel.getVertex(dcel.origin(dcel.next(dcel.next(dcel.next(dcel.incidentEdge(dcel.start())))))).coords, vec2(0.0f, 1.0f));
+    EXPECT_EQ(dcel.origin(dcel.next(dcel.next(dcel.next(dcel.next(dcel.incidentEdge(dcel.start())))))), dcel.start());
 
     // test prev
     EXPECT_EQ(dcel.getVertex(dcel.origin(dcel.prev(dcel.start()))).coords, vec2(0.0f, 1.0f));
@@ -51,14 +43,8 @@ TEST(DCELTests, ConnectTest) {
     std::vector<vec2> vertices = { vec2(0, 0), vec2(1, 0), vec2(1, 0), vec2(0, 1) };
 
     DCEL dcel(vertices);
-
-    std::cout << "Before connecting: \n";
-    printCycle(dcel, dcel.start());
-
-    dcel.connect(dcel.start(), dcel.next(dcel.next(dcel.incidentEdge(dcel.start()))));
-
-    std::cout << "After connecting: \n";
-    printCycle(dcel, dcel.start());
+    
+    dcel.connect(dcel.next(dcel.incidentEdge(dcel.start())), dcel.next(dcel.next(dcel.next(dcel.incidentEdge(dcel.start())))));
 
     // first vertex
     EXPECT_EQ(dcel.getVertex(dcel.start()).coords.x, 0.0f) << "First vertex has wrong x coordinate";

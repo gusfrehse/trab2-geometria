@@ -27,6 +27,7 @@ struct DCELHalfEdge {
 };
 
 class DCEL {
+    public:
     std::vector<DCELVertex> vertices;
     std::vector<DCELHalfEdge> halfEdges;
 
@@ -42,7 +43,7 @@ public:
     HalfEdgeId& next(HalfEdgeId id) { return halfEdges[id].next; }
     HalfEdgeId& prev(HalfEdgeId id) { return halfEdges[id].prev;}
     HalfEdgeId& twin(HalfEdgeId id) { return halfEdges[id].twin;}
-    VertexId origin(HalfEdgeId id) { return halfEdges[id].origin;}
+    VertexId& origin(HalfEdgeId id) { return halfEdges[id].origin;}
 
     void connect(HalfEdgeId a, HalfEdgeId b);
 };
