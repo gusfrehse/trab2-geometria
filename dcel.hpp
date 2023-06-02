@@ -31,10 +31,13 @@ class DCEL {
     std::vector<DCELVertex> vertices;
     std::vector<DCELHalfEdge> halfEdges;
 
+    void insertVertices(std::vector<vec2> CCWConvexVertices);
+
 public:
     DCEL(std::vector<vec2> CCWConvexVertices);
-    VertexId start();
-    VertexId end();
+    DCEL() = default;
+
+    HalfEdgeId start();
 
     DCELVertex& getVertex(VertexId id);
     DCELHalfEdge& getHalfEdge(HalfEdgeId id);

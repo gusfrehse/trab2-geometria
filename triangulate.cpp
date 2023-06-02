@@ -9,13 +9,6 @@
 
 #include "dcel.hpp"
 
-struct triangle {
-    std::array<int, 3> vertices;
-    std::array<int, 3> neighbours;
-};
-
-using edge = std::pair<int, int>;
-
 void readVertices(int n, std::vector<vec2>& vertices) {
     vertices.resize(n);
 
@@ -80,14 +73,24 @@ bool isEndVertex(DCEL& dcel, VertexId v) {
     return (prevCoords.y >= vCoords.y && nextCoords.y >= vCoords.y) && (det(a, b) <= 0); 
 }
 
-std::vector<VertexId> helper;
-std::set<HalfEdgeId> t;
+DCEL dcel;
 
-void handleVertex(DCEL &dcel, VertexId v) {
-    if (isStartVertex(dcel, v)) {
+auto toTheLeft = [](const HalfEdgeId &a, const HalfEdgeId &b) {
+    vec2 aCoords = dcel.getVertex(dcel.origin(a)).coords;
+    vec2 bCoords = dcel.getVertex(dcel.origin(b)).coords;
+    vec2 bOpCoords = dcel.getVertex(dcel.origin(dcel.twin(b))).coords;
+
+    return det(aCoords - bCoords, bOpCoords - bCoords) > 0;
+};
+
+std::vector<VertexId> helper;
+std::set<HalfEdgeId, decltype(toTheLeft)> t;
+
+void handleVertex(DCEL &dcel, HalfEdgeId v) {
+    if (isStartVertex(dcel, dcel.origin(v))) {
         t.insert(dcel.incidentEdge(v));
         helper[v] = v;
-    } else if (isEndVertex(dcel, v)) {
+    } else if (isEndVertex(dcel, dcel.origin(v))) {
         int eIminus1 = dcel.origin(dcel.prev(dcel.incidentEdge(v)));
 
         if (isMergeVertex(dcel, helper[eIminus1])) {
@@ -96,8 +99,8 @@ void handleVertex(DCEL &dcel, VertexId v) {
         }
 
         t.erase(dcel.prev(dcel.incidentEdge(v)));
-    } else if (isSplitVertex(dcel, v)) {
-    } else if (isMergeVertex(dcel, v)) {
+    } else if (isSplitVertex(dcel, dcel.origin(v))) {
+    } else if (isMergeVertex(dcel, dcel.origin(v))) {
     } else { // Regular Vertex
     }
 }
@@ -113,9 +116,9 @@ int main() {
 
     DCEL dcel(vertices);
 
-    auto pqCmp = [&dcel](VertexId a, VertexId b) {
-        vec2 aCoords = dcel.getVertex(a).coords;
-        vec2 bCoords = dcel.getVertex(b).coords;
+    auto pqCmp = [&dcel](HalfEdgeId a, HalfEdgeId b) {
+        vec2 aCoords = dcel.getVertex(dcel.origin(a)).coords;
+        vec2 bCoords = dcel.getVertex(dcel.origin(b)).coords;
 
         if (aCoords.y == bCoords.y) {
             return aCoords.x < bCoords.x;
@@ -123,21 +126,21 @@ int main() {
         return aCoords.y < bCoords.y;
     };
 
-    std::priority_queue<VertexId, std::vector<VertexId>, decltype(pqCmp)> pq(pqCmp);
+    std::priority_queue<HalfEdgeId, std::vector<HalfEdgeId>, decltype(pqCmp)> pq(pqCmp);
     
     helper.resize(n);
 
     VertexId start, curr;
     
-    // Add vertices to queue
+    // Add vertices (which are identified by a edge which they are the origin to) to queue
     start = curr = dcel.start();
     do {
         pq.push(curr);
-        curr = dcel.origin(dcel.twin(dcel.incidentEdge(curr)));
+        curr = dcel.next(curr);
     } while (curr != start);
 
     while (!pq.empty()) {
-        VertexId v = pq.top();
+        HalfEdgeId v = pq.top();
         pq.pop();
 
         handleVertex(dcel, v);

@@ -9,6 +9,10 @@ int realMod(int a, int b) {
 }
 
 DCEL::DCEL(std::vector<vec2> CCWConvexVertices) {
+    insertVertices(CCWConvexVertices);
+}
+
+void DCEL::insertVertices(std::vector<vec2> CCWConvexVertices) {
     vertices.resize(CCWConvexVertices.size());
     halfEdges.resize(2 * CCWConvexVertices.size());
     
@@ -31,11 +35,6 @@ DCEL::DCEL(std::vector<vec2> CCWConvexVertices) {
 
 HalfEdgeId DCEL::start() {
     return 0;
-}
-
-// TODO: this is wrong shouldn't be used. (use start() instead and check if it's the same vertex)
-HalfEdgeId DCEL::end() {
-    return halfEdges.size() - 1;
 }
 
 DCELVertex& DCEL::getVertex(VertexId id)

@@ -1,6 +1,6 @@
 CC = g++
 CXX = g++
-CXXFLAGS += -Wall -Wextra -Wpedantic -pedantic-errors -O2 -g
+CXXFLAGS += -Wall -Wextra -Wpedantic  -pedantic-errors -O2 -g -std=c++20
 OBJS = dcel.o
 TEST_OBJS = dcel_tests.o
 MAIN = triangulate.o
