@@ -62,7 +62,6 @@ DCELHalfEdge& DCEL::getHalfEdge(HalfEdgeId id)
             d
 */
 void DCEL::connect(HalfEdgeId a, HalfEdgeId b) {
-    // TODO: Fix this
     halfEdges.push_back({});
     halfEdges.push_back({});
 
@@ -88,6 +87,20 @@ void DCEL::connect(HalfEdgeId a, HalfEdgeId b) {
 
     origin(x) = origin(b);
     origin(y) = origin(a);
+}
+
+void DCEL::print() {
+    std::cout << vertices.size() << " " << halfEdges.size() / 2 <<  "\n";
+
+    // print vertices
+    for (const auto& v : vertices) {
+        std::cout << v.coords << "\n";
+    }
+
+    // print edges
+    for (int i = 0; i < halfEdges.size(); ++++i) {
+        std::cout << halfEdges[i].origin << " " << origin(next(i)) << "\n";
+    }
 }
 
 std::ostream& operator<<(std::ostream& os, const DCELHalfEdge& halfEdge) {

@@ -48,5 +48,7 @@ public:
     HalfEdgeId& twin(HalfEdgeId id) { return halfEdges[id].twin;}
     VertexId& origin(HalfEdgeId id) { return halfEdges[id].origin;}
 
+    void print();
+
     void connect(HalfEdgeId a, HalfEdgeId b);
 };

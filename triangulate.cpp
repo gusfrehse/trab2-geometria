@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -74,33 +75,56 @@ bool isEndVertex(DCEL& dcel, VertexId v) {
 }
 
 DCEL dcel;
+DCEL *dcelPtr = &dcel;
 
 auto toTheLeft = [](const HalfEdgeId &a, const HalfEdgeId &b) {
-    vec2 aCoords = dcel.getVertex(dcel.origin(a)).coords;
-    vec2 bCoords = dcel.getVertex(dcel.origin(b)).coords;
-    vec2 bOpCoords = dcel.getVertex(dcel.origin(dcel.twin(b))).coords;
+    vec2 aCoords = dcelPtr->getVertex(dcelPtr->origin(a)).coords;
+    vec2 bCoords = dcelPtr->getVertex(dcelPtr->origin(b)).coords;
+    vec2 bOpCoords = dcelPtr->getVertex(dcelPtr->origin(dcel.twin(b))).coords;
 
     return det(aCoords - bCoords, bOpCoords - bCoords) > 0;
 };
 
-std::vector<VertexId> helper;
+std::vector<HalfEdgeId> helper;
 std::set<HalfEdgeId, decltype(toTheLeft)> t;
 
 void handleVertex(DCEL &dcel, HalfEdgeId v) {
     if (isStartVertex(dcel, dcel.origin(v))) {
-        t.insert(dcel.incidentEdge(v));
+        t.insert(v);
         helper[v] = v;
     } else if (isEndVertex(dcel, dcel.origin(v))) {
-        int eIminus1 = dcel.origin(dcel.prev(dcel.incidentEdge(v)));
+        HalfEdgeId eIminus1 = dcel.origin(dcel.prev(v));
 
         if (isMergeVertex(dcel, helper[eIminus1])) {
-            // TODO insert diagonal from v to helper[eIminus1]
             dcel.connect(v, helper[eIminus1]);
         }
 
-        t.erase(dcel.prev(dcel.incidentEdge(v)));
+        t.erase(dcel.prev(v));
     } else if (isSplitVertex(dcel, dcel.origin(v))) {
+        HalfEdgeId ej = *t.lower_bound(v);
+
+        dcel.connect(v, helper[ej]);
+
+        helper[ej] = v;
+
+        t.insert(v);
+        helper[v] = v;
     } else if (isMergeVertex(dcel, dcel.origin(v))) {
+        HalfEdgeId eIminus1 = dcel.origin(dcel.prev(v));
+
+        if (isMergeVertex(dcel, helper[eIminus1])) {
+            dcel.connect(v, helper[eIminus1]);
+        }
+
+        t.erase(dcel.prev(v));
+
+        HalfEdgeId ej = *t.lower_bound(v);
+
+        if (isMergeVertex(dcel, helper[ej])) {
+            dcel.connect(v, helper[ej]);
+        }
+
+        helper[ej] = v;
     } else { // Regular Vertex
     }
 }
@@ -114,9 +138,9 @@ int main() {
 
     readVertices(n, vertices);
 
-    DCEL dcel(vertices);
+    dcel.insertVertices(vertices);
 
-    auto pqCmp = [&dcel](HalfEdgeId a, HalfEdgeId b) {
+    auto pqCmp = [](HalfEdgeId a, HalfEdgeId b) {
         vec2 aCoords = dcel.getVertex(dcel.origin(a)).coords;
         vec2 bCoords = dcel.getVertex(dcel.origin(b)).coords;
 
@@ -128,7 +152,7 @@ int main() {
 
     std::priority_queue<HalfEdgeId, std::vector<HalfEdgeId>, decltype(pqCmp)> pq(pqCmp);
     
-    helper.resize(n);
+    helper.resize(2 * n);
 
     VertexId start, curr;
     
@@ -145,6 +169,8 @@ int main() {
 
         handleVertex(dcel, v);
     }
+
+    dcel.print();
 
     return 0;
 }
