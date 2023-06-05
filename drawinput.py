@@ -11,19 +11,21 @@ from matplotlib.lines import Line2D
 # <index of start vertex> <space> <index of end vertex>
 # ...
 
+colors = ['r', 'g', 'b']
+
 numVertices= int(input())
 
 points = []
 
-[x0, y0] = list(map(int, input().split()))
+[x0, y0] = list(map(float, input().split()))
 [xp, yp] = [x0, y0]
 
 plt.annotate('0', xy=(x0, y0))
 
 for i in range(1, numVertices):
-    [x, y] = list(map(int, input().split()))
+    [x, y] = list(map(float, input().split()))
 
-    plt.plot([xp, x], [yp, y], 'b-')
+    plt.plot([xp, x], [yp, y], colors[i % len(colors)] + '-')
     plt.annotate(str(i), xy=(x, y))
 
     xp = x

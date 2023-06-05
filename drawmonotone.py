@@ -12,23 +12,25 @@ from matplotlib.lines import Line2D
 # <index of start vertex> <space> <index of end vertex>
 # ...
 
+colors = ['r', 'g', 'b']
+
 [numVertices, numEdges] = list(map(int, input().split()))
 
 points = []
 
 for i in range(0, numVertices):
-    points.append(list(map(int, input().split())))
+    points.append(list(map(float, input().split())))
 
 print(points)
 
 for i in range(numEdges):
     [pa, pb] = list(map(int, input().split()))
+    print(pa, pb)
 
     [xa, ya] = points[pa]
     [xb, yb] = points[pb]
 
-    plt.plot([xa, xb], [ya, yb], 'b-')
-    # TODO: figure this out
-    #plt.annotate(str(pa), xy=(0.3 * xa + 0.7 * xb, 0.3 * ya + 0.7 * yb))
+    plt.plot([xa, xb], [ya, yb], colors[i % len(colors)] + '-')
+    plt.annotate(str(pa), xy=(xa, ya)) # point
 
 plt.show()

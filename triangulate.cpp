@@ -74,6 +74,14 @@ bool isEndVertex(DCEL& dcel, VertexId v) {
     return (prevCoords.y >= vCoords.y && nextCoords.y >= vCoords.y) && (det(a, b) <= 0); 
 }
 
+bool liesToTheRightOfThePolygon(DCEL& dcel, HalfEdgeId he) {
+    vec2 vCoords = dcel.getVertex(dcel.origin(he)).coords;
+    vec2 nextCoords = dcel.getVertex(dcel.origin(dcel.next(he))).coords;
+
+    // check if next vertex is below v (only works if polygon vertices are in counter clockwise order)
+    return nextCoords.y < vCoords.y;   
+}
+
 DCEL dcel;
 DCEL *dcelPtr = &dcel;
 
@@ -88,19 +96,35 @@ auto toTheLeft = [](const HalfEdgeId &a, const HalfEdgeId &b) {
 std::vector<HalfEdgeId> helper;
 std::set<HalfEdgeId, decltype(toTheLeft)> t;
 
-void handleVertex(DCEL &dcel, HalfEdgeId v) {
-    if (isStartVertex(dcel, dcel.origin(v))) {
+void handleVertex(DCEL &dcel, HalfEdgeId v)
+{
+    std::cerr << "Handling vertex " << dcel.origin(v) << " he " << v << std::endl;
+    if (isStartVertex(dcel, dcel.origin(v)))
+    {
+        std::cerr << "\tis start vertex" << std::endl;
         t.insert(v);
         helper[v] = v;
-    } else if (isEndVertex(dcel, dcel.origin(v))) {
-        HalfEdgeId eIminus1 = dcel.origin(dcel.prev(v));
+    }
+    else if (isEndVertex(dcel, dcel.origin(v)))
+    {
+        std::cerr << "\tis end vertex" << std::endl;
+        HalfEdgeId eIminus1 = dcel.prev(v);
 
-        if (isMergeVertex(dcel, helper[eIminus1])) {
+        std::cerr << "\te i-1 is " << dcel.origin(v) << std::endl;
+
+        if (isMergeVertex(dcel, helper[eIminus1]))
+        {
+            std::cerr << "\thelper[eIminus1] (he: " << helper[eIminus1] <<  ", vertex: " << dcel.origin(helper[eIminus1]) <<  ") is merge vertex" << std::endl;
             dcel.connect(v, helper[eIminus1]);
+        } else {
+            std::cerr << "\thelper[eIminus1] (he: " << helper[eIminus1] <<  ", vertex: " << dcel.origin(helper[eIminus1]) <<  ") is not merge vertex" << std::endl;
         }
 
-        t.erase(dcel.prev(v));
-    } else if (isSplitVertex(dcel, dcel.origin(v))) {
+        t.erase(eIminus1);
+    }
+    else if (isSplitVertex(dcel, dcel.origin(v)))
+    {
+        std::cerr << "\tis split vertex" << std::endl;
         HalfEdgeId ej = *t.lower_bound(v);
 
         dcel.connect(v, helper[ej]);
@@ -109,23 +133,55 @@ void handleVertex(DCEL &dcel, HalfEdgeId v) {
 
         t.insert(v);
         helper[v] = v;
-    } else if (isMergeVertex(dcel, dcel.origin(v))) {
-        HalfEdgeId eIminus1 = dcel.origin(dcel.prev(v));
+    }
+    else if (isMergeVertex(dcel, dcel.origin(v)))
+    {
+        std::cerr << "\tis merge vertex" << std::endl;
+        HalfEdgeId eIminus1 = dcel.prev(v);
 
-        if (isMergeVertex(dcel, helper[eIminus1])) {
+        if (isMergeVertex(dcel, helper[eIminus1]))
+        {
             dcel.connect(v, helper[eIminus1]);
         }
 
-        t.erase(dcel.prev(v));
+        t.erase(eIminus1);
 
         HalfEdgeId ej = *t.lower_bound(v);
 
-        if (isMergeVertex(dcel, helper[ej])) {
+        if (isMergeVertex(dcel, helper[ej]))
+        {
             dcel.connect(v, helper[ej]);
         }
 
         helper[ej] = v;
-    } else { // Regular Vertex
+    }
+    else
+    { // Regular Vertex
+        std::cerr << "\tis regular vertex" << std::endl;
+        HalfEdgeId eIminus1 = dcel.prev(v);
+
+        if (liesToTheRightOfThePolygon(dcel, v))
+        {
+            if (isMergeVertex(dcel, helper[eIminus1])) {
+                dcel.connect(v, helper[eIminus1]);
+            }
+
+            t.erase(eIminus1);
+            
+            t.insert(v);
+            helper[v] = v;
+        }
+        else
+        {
+            HalfEdgeId ej = *t.lower_bound(v);
+            
+            if (isMergeVertex(dcel, helper[ej]))
+            {
+                dcel.connect(v, helper[ej]);
+            }
+            
+            helper[ej] = v;
+        }
     }
 }
 
