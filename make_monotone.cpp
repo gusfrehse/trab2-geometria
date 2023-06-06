@@ -74,12 +74,28 @@ DCEL dcel;
 DCEL *dcelPtr = &dcel;
 
 // TODO: Maybe dcelPtr is not needed and we can maybe change to only dcel.
+//auto toTheLeft = [](const HalfEdgeId &a, const HalfEdgeId &b) {
+//    vec2 aCoords = dcelPtr->getVertex(dcelPtr->origin(a)).coords;
+//    vec2 bCoords = dcelPtr->getVertex(dcelPtr->origin(b)).coords;
+//    vec2 bOpCoords = dcelPtr->getVertex(dcelPtr->origin(dcel.twin(b))).coords;
+//
+//    return det(aCoords - bCoords, bOpCoords - bCoords) < 0;
+//};
+
 auto toTheLeft = [](const HalfEdgeId &a, const HalfEdgeId &b) {
     vec2 aCoords = dcelPtr->getVertex(dcelPtr->origin(a)).coords;
     vec2 bCoords = dcelPtr->getVertex(dcelPtr->origin(b)).coords;
     vec2 bOpCoords = dcelPtr->getVertex(dcelPtr->origin(dcel.twin(b))).coords;
+    
+    float yMin = std::min(dcelPtr->getVertex(dcelPtr->origin(a)).coords.y,
+                          dcelPtr->getVertex(dcelPtr->origin(dcel.twin(a))).coords.y);
+    
+    float yMax = std::max(dcelPtr->getVertex(dcelPtr->origin(b)).coords.y,
+                          dcelPtr->getVertex(dcelPtr->origin(dcel.twin(b))).coords.y);
+    
+    float y = 
 
-    return det(aCoords - bCoords, bOpCoords - bCoords) > 0;
+    return det(aCoords - bCoords, bOpCoords - bCoords) < 0;
 };
 
 std::vector<HalfEdgeId> helper;
