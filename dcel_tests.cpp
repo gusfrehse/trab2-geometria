@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 
 #include "util.hpp"
-#include "dcel.hpp"
+#include "dcel.cpp"
 
 void printCycle(DCEL &dcel, HalfEdgeId start) {
     HalfEdgeId curr = start;

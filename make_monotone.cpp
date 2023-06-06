@@ -4,6 +4,7 @@
 
 #include <set>
 #include <queue>
+#include <gtest/gtest.h>
 
 bool isSplitVertex(DCEL& dcel, HalfEdgeId v) {
     VertexId prev = dcel.origin(dcel.prev(v));
@@ -72,6 +73,7 @@ bool liesToTheRightOfThePolygon(DCEL& dcel, HalfEdgeId he) {
 DCEL dcel;
 DCEL *dcelPtr = &dcel;
 
+// TODO: Maybe dcelPtr is not needed and we can maybe change to only dcel.
 auto toTheLeft = [](const HalfEdgeId &a, const HalfEdgeId &b) {
     vec2 aCoords = dcelPtr->getVertex(dcelPtr->origin(a)).coords;
     vec2 bCoords = dcelPtr->getVertex(dcelPtr->origin(b)).coords;
@@ -88,12 +90,14 @@ void handleVertex(DCEL &dcel, HalfEdgeId v)
     std::cerr << "Handling vertex " << dcel.origin(v) << " he " << v << std::endl;
     if (isStartVertex(dcel, v))
     {
+        // Start Vertex
         std::cerr << "\tis start vertex" << std::endl;
         t.insert(v);
         helper[v] = v;
     }
     else if (isEndVertex(dcel, v))
     {
+        // End Vertex
         std::cerr << "\tis end vertex" << std::endl;
         HalfEdgeId eIminus1 = dcel.prev(v);
 
@@ -111,6 +115,7 @@ void handleVertex(DCEL &dcel, HalfEdgeId v)
     }
     else if (isSplitVertex(dcel, v))
     {
+        // Split Vertex
         std::cerr << "\tis split vertex" << std::endl;
         HalfEdgeId ej = *t.lower_bound(v);
         
@@ -127,6 +132,7 @@ void handleVertex(DCEL &dcel, HalfEdgeId v)
     }
     else if (isMergeVertex(dcel, v))
     {
+        // Merge Vertex
         std::cerr << "\tis merge vertex" << std::endl;
         HalfEdgeId eIminus1 = dcel.prev(v);
 
