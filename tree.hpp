@@ -14,9 +14,9 @@ struct Node {
 
 class Tree {
     DCEL &dcel;
-    Node *root;
+    Node *root = nullptr;
 public:
-    Tree(DCEL &dcel) : dcel(dcel) {};
+    Tree(DCEL &dcel);
     void insert(HalfEdgeId key);
     void remove(HalfEdgeId key);
     HalfEdgeId get(vec2 point);

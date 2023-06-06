@@ -93,7 +93,7 @@ auto toTheLeft = [](const HalfEdgeId &a, const HalfEdgeId &b) {
     float yMax = std::max(dcelPtr->getVertex(dcelPtr->origin(b)).coords.y,
                           dcelPtr->getVertex(dcelPtr->origin(dcel.twin(b))).coords.y);
     
-    float y = 
+    //float y = 
 
     return det(aCoords - bCoords, bOpCoords - bCoords) < 0;
 };

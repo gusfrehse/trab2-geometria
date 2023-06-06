@@ -1,12 +1,20 @@
 #include "tree.hpp"
 
+Node::Node(HalfEdgeId key)
+    : key(key), left(nullptr), right(nullptr), removed(false)
+{}
+
+Tree::Tree(DCEL &dcel) : dcel(dcel) {};
+
 bool Tree::pointToTheRightOfEdge(vec2 point, HalfEdgeId he) {
+    // TODO: check if correct
     vec2 a = dcel.getVertex(dcel.origin(he)).coords - point;
     vec2 b = dcel.getVertex(dcel.origin(dcel.twin(he))).coords - point;
 
-    return det(a, b) < 0;
+    return det(a, b) > 0;
 }
 
+// returns if a is to the right of b
 bool Tree::edgeToTheRightOfEdge(HalfEdgeId a, HalfEdgeId b) {
     vec2 aCoord = dcel.getVertex(dcel.origin(a)).coords;
     vec2 aOpCoord = dcel.getVertex(dcel.origin(dcel.twin(a))).coords;
@@ -20,7 +28,11 @@ bool Tree::edgeToTheRightOfEdge(HalfEdgeId a, HalfEdgeId b) {
     // guaranteed to intersect the two edges in the X axis
     float y = (maxY + minY) / 2;
     
-    vec2 aVec = aCoord - aOpCoord;
+    // (y - y0) * ((x1 - x0) / (y1 - y0)) + x0 = x
+    float ax = (y - aCoord.y) * ((aOpCoord.x - aCoord.x) / (aOpCoord.y - aCoord.y)) + aCoord.x;
+    float bx = (y - bCoord.y) * ((bOpCoord.x - bCoord.x) / (bOpCoord.y - bCoord.y)) + bCoord.x;
+    
+    return ax > bx;
 }
 
 void Tree::insert(HalfEdgeId key) {
@@ -29,26 +41,65 @@ void Tree::insert(HalfEdgeId key) {
         return;
     }
 
-    Node *curr = root;
-    Node *prev = nullptr;
+    Node *current = root;
 
-    while (curr != nullptr) {
-        prev = curr;
-        if (pointToTheRightOfEdge(dcel.getVertex(dcel.origin(key)).coords, curr->key)) {
-            curr = curr->right;
+    while (true) {
+        std::cout << "Insert Current " <<  current << std::endl;
+        if (edgeToTheRightOfEdge(key, current->key)) {
+            if (current->right == nullptr) {
+                current->right = new Node(key);
+                return;
+            } else {
+                current = current->right;
+            }
         } else {
-            curr = curr->left;
+            if (current->left == nullptr) {
+                current->left = new Node(key);
+                return;
+            } else {
+                current = current->left;
+            }
         }
     }
+}
 
-    if (pointToTheRightOfEdge(dcel.getVertex(dcel.origin(key)).coords, prev->key)) {
-        prev->right = new Node(key);
-    } else {
-        prev->left = new Node(key);
+HalfEdgeId Tree::get(vec2 point)
+{
+    Node *current = root;
+    HalfEdgeId best = -1;
+
+    while (true)
+    {
+        if (current == nullptr)
+            return best;
+        
+        if (pointToTheRightOfEdge(point, current->key))
+        {
+            best = current->key;
+            current = current->right;
+        }
+        else
+            current = current->left;
     }
 }
 
-void remove(HalfEdgeId key) {
+void Tree::remove(HalfEdgeId key) {
+    Node *current = root;
 
+    while (true) {
+        if (current == nullptr) {
+            return;
+        }
+
+        if (current->key == key) {
+            current->removed = true;
+            return;
+        }
+
+        if (edgeToTheRightOfEdge(key, current->key)) {
+            current = current->right;
+        } else {
+            current = current->left;
+        }
+    }
 }
-
