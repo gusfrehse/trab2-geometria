@@ -72,45 +72,25 @@ bool liesToTheRightOfThePolygon(DCEL& dcel, HalfEdgeId he) {
 }
 
 DCEL dcel;
-DCEL *dcelPtr = &dcel;
-
-// TODO: Maybe dcelPtr is not needed and we can maybe change to only dcel.
-//auto toTheLeft = [](const HalfEdgeId &a, const HalfEdgeId &b) {
-//    vec2 aCoords = dcelPtr->getVertex(dcelPtr->origin(a)).coords;
-//    vec2 bCoords = dcelPtr->getVertex(dcelPtr->origin(b)).coords;
-//    vec2 bOpCoords = dcelPtr->getVertex(dcelPtr->origin(dcel.twin(b))).coords;
-//
-//    return det(aCoords - bCoords, bOpCoords - bCoords) < 0;
-//};
-
 std::vector<HalfEdgeId> helper;
 Tree t(dcel);
 
 void handleVertex(DCEL &dcel, HalfEdgeId v)
 {
-    t.print();
-    std::cerr << "Handling vertex " << dcel.origin(v) << " he " << v << std::endl;
     if (isStartVertex(dcel, v))
     {
         // Start Vertex
-        std::cerr << "\tis start vertex" << std::endl;
         t.insert(v);
         helper[v] = v;
     }
     else if (isEndVertex(dcel, v))
     {
         // End Vertex
-        std::cerr << "\tis end vertex" << std::endl;
         HalfEdgeId eIminus1 = dcel.prev(v);
-
-        std::cerr << "\te i-1 is " << dcel.origin(v) << std::endl;
 
         if (isMergeVertex(dcel, helper[eIminus1]))
         {
-            std::cerr << "\thelper[eIminus1] (he: " << helper[eIminus1] <<  ", vertex: " << dcel.origin(helper[eIminus1]) <<  ") is merge vertex" << std::endl;
             dcel.connect(v, helper[eIminus1]);
-        } else {
-            std::cerr << "\thelper[eIminus1] (he: " << helper[eIminus1] <<  ", vertex: " << dcel.origin(helper[eIminus1]) <<  ") is not merge vertex" << std::endl;
         }
 
         t.remove(eIminus1);
@@ -118,13 +98,8 @@ void handleVertex(DCEL &dcel, HalfEdgeId v)
     else if (isSplitVertex(dcel, v))
     {
         // Split Vertex
-        std::cerr << "\tis split vertex" << std::endl;
         HalfEdgeId ej = t.get(dcel.getVertex(dcel.origin(v)).coords);
-        
-        std::cerr << "\tedge directly left of v " << dcel.getHalfEdge(ej) << std::endl;
-        std::cerr << "\thelper[ej]" << dcel.getHalfEdge(helper[ej]) << std::endl;
 
-        std::cerr << "\tconnecting " << dcel.getHalfEdge(v) << " and " << dcel.getHalfEdge(helper[ej]) << std::endl;
         dcel.connect(v, helper[ej]);
 
         helper[ej] = v;
@@ -135,7 +110,6 @@ void handleVertex(DCEL &dcel, HalfEdgeId v)
     else if (isMergeVertex(dcel, v))
     {
         // Merge Vertex
-        std::cerr << "\tis merge vertex" << std::endl;
         HalfEdgeId eIminus1 = dcel.prev(v);
 
         if (isMergeVertex(dcel, helper[eIminus1]))
@@ -157,21 +131,12 @@ void handleVertex(DCEL &dcel, HalfEdgeId v)
     else
     {
         // Regular Vertex
-        std::cerr << "\tis regular vertex" << std::endl;
         HalfEdgeId eIminus1 = dcel.prev(v);
 
         if (!liesToTheRightOfThePolygon(dcel, v))
         {
-            std::cerr << "\tv lies to the right of the polygon" << std::endl;
-            std::cerr << "\teIminus1 " << dcel.getHalfEdge(eIminus1) << std::endl;
-            std::cerr << "\thelper[eIminus1] " << dcel.getHalfEdge(helper[eIminus1]) << std::endl;
             if (isMergeVertex(dcel, helper[eIminus1])) {
-                std::cerr << "\thelper[eIminus1] is merge vertex" << std::endl;
                 dcel.connect(v, helper[eIminus1]);
-            }
-            else
-            {
-                std::cerr << "\thelper[eIminus1] is not merge vertex" << std::endl;
             }
 
             t.remove(eIminus1);
@@ -181,28 +146,13 @@ void handleVertex(DCEL &dcel, HalfEdgeId v)
         }
         else
         {
-            std::cerr << "\tv lies to the left of the polygon" << std::endl;
             HalfEdgeId ej = t.get(dcel.getVertex(dcel.origin(v)).coords);
-
-            if (ej == -1)
-            {
-                std::cerr << "ERRROR: \tej is -1" << std::endl;
-                exit(2123123);
-            }
-            std::cerr << "\thelper size lul " << helper.size() << std::endl;
-            std::cerr << "\tej " << ej << " " << dcel.getHalfEdge(ej) << std::endl;
-            std::cerr << "\thelper[ej] " << dcel.getHalfEdge(helper[ej]) << std::endl;
             
             if (isMergeVertex(dcel, helper[ej]))
             {
-                std::cerr << "\thelper[ej] is merge vertex" << std::endl;
                 dcel.connect(v, helper[ej]);
             }
-            else
-            {
-                std::cerr << "\thelper[ej] is not merge vertex" << std::endl;
-            }
-            
+
             helper[ej] = v;
         }
     }

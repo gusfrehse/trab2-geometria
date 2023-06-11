@@ -16,7 +16,7 @@ void DCEL::insertVertices(std::vector<vec2> CCWConvexVertices) {
     vertices.resize(CCWConvexVertices.size());
     halfEdges.resize(2 * CCWConvexVertices.size());
     
-    for (int i = 0; i < CCWConvexVertices.size(); ++i) {
+    for (long unsigned int i = 0; i < CCWConvexVertices.size(); ++i) {
         vertices[i].coords = CCWConvexVertices[i];
         vertices[i].incidentEdge = 2 * i;
         vertices[i].id = i;
@@ -98,7 +98,7 @@ void DCEL::print() {
     }
 
     // print edges
-    for (int i = 0; i < halfEdges.size(); ++++i) {
+    for (long unsigned int i = 0; i < halfEdges.size(); ++++i) {
         std::cout << halfEdges[i].origin << " " << origin(next(i)) << "\n";
     }
 }

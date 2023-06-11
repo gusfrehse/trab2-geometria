@@ -46,7 +46,6 @@ void Tree::insert(HalfEdgeId key) {
     Node *current = root;
 
     while (true) {
-        std::cerr << "Insert Current " <<  current << std::endl;
         if (edgeToTheRightOfEdge(key, current->key)) {
             if (current->right == nullptr) {
                 current->right = new Node(key);
@@ -82,12 +81,6 @@ HalfEdgeId Tree::get(vec2 point)
         }
         else
             current = current->left;
-    }
-
-    if (best == -1)
-    {
-        std::cerr << "Error: best is -1" << std::endl;
-        exit(123);
     }
 
     return best;
