@@ -32,6 +32,7 @@ class DCEL {
     std::vector<DCELHalfEdge> halfEdges;
 
     void insertVertices(std::vector<vec2> CCWConvexVertices);
+    double getXfromY(HalfEdgeId a, double y);
 
 public:
     DCEL(std::vector<vec2> CCWConvexVertices);

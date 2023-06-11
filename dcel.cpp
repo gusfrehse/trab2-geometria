@@ -107,3 +107,10 @@ std::ostream& operator<<(std::ostream& os, const DCELHalfEdge& halfEdge) {
     os << "HalfEdge { origin = " << halfEdge.origin << ", twin  = " << halfEdge.twin << ", next = " << halfEdge.next << ", prev = " << halfEdge.prev << " }";
     return os;
 }
+
+double DCEL::getXfromY(HalfEdgeId he, double y) {
+    vec2 a = getVertex(origin(he)).coords;
+    vec2 b = getVertex(origin(twin(he))).coords;
+
+    return (b.x * (a.y - y) - b.x * (b.y -y)) / (a.y - b.y);
+}

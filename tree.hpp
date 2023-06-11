@@ -14,6 +14,7 @@ struct Node {
 class Tree {
     DCEL &dcel;
     Node *root = nullptr;
+
 public:
     Tree(DCEL &dcel);
     void print();

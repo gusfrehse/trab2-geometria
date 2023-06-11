@@ -1,7 +1,7 @@
 CC = g++
 CXX = g++
 CXXFLAGS += -Wall -Wextra -Wpedantic  -pedantic-errors -O2 -g -std=c++20
-OBJS = dcel.o make_monotone.o
+OBJS = dcel.o make_monotone.o tree.o
 TEST_OBJS = dcel_tests.o make_monotone_tests.o tree_tests.o
 MAIN = triangulate.o
 

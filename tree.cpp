@@ -30,9 +30,8 @@ bool Tree::edgeToTheRightOfEdge(HalfEdgeId a, HalfEdgeId b) {
     // guaranteed to intersect the two edges in the X axis
     float y = (maxY + minY) / 2;
     
-    // (y - y0) * ((x1 - x0) / (y1 - y0)) + x0 = x
-    float ax = (y - aCoord.y) * ((aOpCoord.x - aCoord.x) / (aOpCoord.y - aCoord.y)) + aCoord.x;
-    float bx = (y - bCoord.y) * ((bOpCoord.x - bCoord.x) / (bOpCoord.y - bCoord.y)) + bCoord.x;
+    float ax = dcel.getXfromY(a, y);
+    float bx = dcel.getXfromY(b, y);
     
     return ax > bx;
 }
@@ -139,20 +138,41 @@ void Tree::remove(HalfEdgeId key)
 
         delete temp;
     }
-    else if (!current->right)
+    else if (!current->right && current->left)
     {
         Node *temp = current->left;
+
         current->key = temp->key;
         current->left = temp->left;
         current->right = temp->right;
 
         delete temp;
     }
+    else if (!current->right && !current->left)
+    {
+        if (parent)
+        {
+            if (parent->left == current)
+                parent->left = nullptr;
+            else
+                parent->right = nullptr;
+        }
+        else
+            root = nullptr;
+
+        delete current;
+    }
     else
     {
-        auto [min, minParent] = minValueNode(current->right);
+        std::pair<Node *, Node *> p = minValueNode(current->right);
+        Node *min = p.first;
+        Node *minParent = p.second;
 
-        minParent->left = nullptr;
+        if (minParent)
+            minParent->left = nullptr;
+        else
+            current->right = nullptr;
+
         current->key = min->key;
 
         delete min;
@@ -161,16 +181,18 @@ void Tree::remove(HalfEdgeId key)
 
 void Tree::print()
 {
-    std::stack<std::pair<Node *, int>> s;
+    std::stack<std::tuple<Node *, char, int>> s;
     Node* current = root;
     int indent = 0;
+    char side = 'O';
 
-    s.push({current, indent});
+    s.push({current, side, indent});
 
     while (!s.empty())
     {
-        current = s.top().first;
-        indent = s.top().second;
+        current = std::get<0>(s.top());
+        side = std::get<1>(s.top());
+        indent = std::get<2>(s.top());
         s.pop();
 
         if (!current)
@@ -179,9 +201,9 @@ void Tree::print()
         for (int i = 0; i < indent; i++)
             std::cout << " ";
 
-        std::cout << current->key << std::endl;
+        std::cout << side << " " << current->key << " " << dcel.getHalfEdge(current->key) << std::endl;
 
-        s.push({current->left, indent + 2});
-        s.push({current->right, indent + 2});
+        s.push({current->left, 'L', indent + 2});
+        s.push({current->right, 'R', indent + 2});
     }
 }
