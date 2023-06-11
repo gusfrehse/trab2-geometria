@@ -1,7 +1,9 @@
 #include "tree.hpp"
 
+#include <stack>
+
 Node::Node(HalfEdgeId key)
-    : key(key), left(nullptr), right(nullptr), removed(false)
+    : key(key), left(nullptr), right(nullptr)
 {}
 
 Tree::Tree(DCEL &dcel) : dcel(dcel) {};
@@ -81,25 +83,105 @@ HalfEdgeId Tree::get(vec2 point)
         else
             current = current->left;
     }
+
+    return best;
 }
 
-void Tree::remove(HalfEdgeId key) {
+std::pair<Node *, Node *> minValueNode(Node *node)
+{
+    Node *current = node;
+    Node *parent = nullptr;
+
+    while (current && current->left != nullptr)
+    {
+        parent = current;
+        current = current->left;
+    }
+
+    return {current, parent};
+}
+
+void Tree::remove(HalfEdgeId key)
+{
+    std::stack<std::pair<Node *, Node *>> s;
+
     Node *current = root;
+    Node *parent = nullptr;
+    s.push({current, parent});
 
-    while (true) {
-        if (current == nullptr) {
-            return;
-        }
+    while (!s.empty())
+    {
+        current = s.top().first;
+        parent = s.top().second;
+        s.pop();
 
-        if (current->key == key) {
-            current->removed = true;
-            return;
-        }
+        if (!current)
+            continue;
 
-        if (edgeToTheRightOfEdge(key, current->key)) {
-            current = current->right;
-        } else {
-            current = current->left;
-        }
+        if (current->key == key)
+            break;
+        
+        if (edgeToTheRightOfEdge(key, current->key))
+            s.push({current->right, current});
+        else 
+            s.push({current->left, current});
+    }
+
+    if (!current)
+        return;
+    
+    if (!current->left && current->right)
+    {
+        Node *temp = current->right;
+        current->key = temp->key;
+        current->left = temp->left;
+        current->right = temp->right;
+
+        delete temp;
+    }
+    else if (!current->right)
+    {
+        Node *temp = current->left;
+        current->key = temp->key;
+        current->left = temp->left;
+        current->right = temp->right;
+
+        delete temp;
+    }
+    else
+    {
+        auto [min, minParent] = minValueNode(current->right);
+
+        minParent->left = nullptr;
+        current->key = min->key;
+
+        delete min;
+    }
+}
+
+void Tree::print()
+{
+    std::stack<std::pair<Node *, int>> s;
+    Node* current = root;
+    int indent = 0;
+
+    s.push({current, indent});
+
+    while (!s.empty())
+    {
+        current = s.top().first;
+        indent = s.top().second;
+        s.pop();
+
+        if (!current)
+            continue;
+
+        for (int i = 0; i < indent; i++)
+            std::cout << " ";
+
+        std::cout << current->key << std::endl;
+
+        s.push({current->left, indent + 2});
+        s.push({current->right, indent + 2});
     }
 }

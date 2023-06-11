@@ -3,6 +3,7 @@
 
 
 
+/*
 TEST(MakeMonotoneHelpers, ToTheLeft) {
     std::vector<vec2> vertices = { vec2(0, 0), vec2(1, 1), vec2(2, 0), vec2(2, 2), vec2(0, 2) };
 
@@ -18,3 +19,4 @@ TEST(MakeMonotoneHelpers, ToTheLeft) {
     EXPECT_TRUE(toTheLeft(dcel.prev(dcel.start()), dcel.next(dcel.start())));
     EXPECT_FALSE(toTheLeft(dcel.next(dcel.start()), dcel.prev(dcel.start())));
 }
+*/

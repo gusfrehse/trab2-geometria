@@ -7,7 +7,6 @@ struct Node {
     HalfEdgeId key;
     Node *left;
     Node *right;
-    bool removed;
     
     Node(HalfEdgeId key);
 };
@@ -17,6 +16,7 @@ class Tree {
     Node *root = nullptr;
 public:
     Tree(DCEL &dcel);
+    void print();
     void insert(HalfEdgeId key);
     void remove(HalfEdgeId key);
     HalfEdgeId get(vec2 point);
