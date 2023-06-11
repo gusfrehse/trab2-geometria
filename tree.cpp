@@ -1,6 +1,7 @@
 #include "tree.hpp"
 
 #include <stack>
+#include <cassert>
 
 Node::Node(HalfEdgeId key)
     : key(key), left(nullptr), right(nullptr)
@@ -10,8 +11,8 @@ Tree::Tree(DCEL &dcel) : dcel(dcel) {};
 
 bool Tree::pointToTheRightOfEdge(vec2 point, HalfEdgeId he) {
     // TODO: check if correct
-    vec2 a = dcel.getVertex(dcel.origin(he)).coords - point;
-    vec2 b = dcel.getVertex(dcel.origin(dcel.twin(he))).coords - point;
+    vec2 a = point - dcel.getVertex(dcel.origin(he)).coords;
+    vec2 b = dcel.getVertex(dcel.origin(dcel.twin(he))).coords - dcel.getVertex(dcel.origin(he)).coords;
 
     return det(a, b) > 0;
 }
@@ -45,7 +46,7 @@ void Tree::insert(HalfEdgeId key) {
     Node *current = root;
 
     while (true) {
-        std::cout << "Insert Current " <<  current << std::endl;
+        std::cerr << "Insert Current " <<  current << std::endl;
         if (edgeToTheRightOfEdge(key, current->key)) {
             if (current->right == nullptr) {
                 current->right = new Node(key);
@@ -81,6 +82,14 @@ HalfEdgeId Tree::get(vec2 point)
         }
         else
             current = current->left;
+    }
+
+    std::cerr << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA " << std::endl;
+
+    if (best == -1)
+    {
+        std::cerr << "Error: best is -1" << std::endl;
+        exit(123);
     }
 
     return best;

@@ -1,6 +1,7 @@
 #include "make_monotone.hpp"
 #include "dcel.hpp"
 #include "util.hpp"
+#include "tree.hpp"
 
 #include <set>
 #include <queue>
@@ -82,24 +83,8 @@ DCEL *dcelPtr = &dcel;
 //    return det(aCoords - bCoords, bOpCoords - bCoords) < 0;
 //};
 
-auto toTheLeft = [](const HalfEdgeId &a, const HalfEdgeId &b) {
-    vec2 aCoords = dcelPtr->getVertex(dcelPtr->origin(a)).coords;
-    vec2 bCoords = dcelPtr->getVertex(dcelPtr->origin(b)).coords;
-    vec2 bOpCoords = dcelPtr->getVertex(dcelPtr->origin(dcel.twin(b))).coords;
-    
-    float yMin = std::min(dcelPtr->getVertex(dcelPtr->origin(a)).coords.y,
-                          dcelPtr->getVertex(dcelPtr->origin(dcel.twin(a))).coords.y);
-    
-    float yMax = std::max(dcelPtr->getVertex(dcelPtr->origin(b)).coords.y,
-                          dcelPtr->getVertex(dcelPtr->origin(dcel.twin(b))).coords.y);
-    
-    //float y = 
-
-    return det(aCoords - bCoords, bOpCoords - bCoords) < 0;
-};
-
 std::vector<HalfEdgeId> helper;
-std::set<HalfEdgeId, decltype(toTheLeft)> t;
+Tree t(dcel);
 
 void handleVertex(DCEL &dcel, HalfEdgeId v)
 {
@@ -127,13 +112,13 @@ void handleVertex(DCEL &dcel, HalfEdgeId v)
             std::cerr << "\thelper[eIminus1] (he: " << helper[eIminus1] <<  ", vertex: " << dcel.origin(helper[eIminus1]) <<  ") is not merge vertex" << std::endl;
         }
 
-        t.erase(eIminus1);
+        t.remove(eIminus1);
     }
     else if (isSplitVertex(dcel, v))
     {
         // Split Vertex
         std::cerr << "\tis split vertex" << std::endl;
-        HalfEdgeId ej = *t.lower_bound(v);
+        HalfEdgeId ej = t.get(dcel.getVertex(dcel.origin(v)).coords);
         
         std::cerr << "\tedge directly left of v " << dcel.getHalfEdge(ej) << std::endl;
         std::cerr << "\thelper[ej]" << dcel.getHalfEdge(helper[ej]) << std::endl;
@@ -157,9 +142,9 @@ void handleVertex(DCEL &dcel, HalfEdgeId v)
             dcel.connect(v, helper[eIminus1]);
         }
 
-        t.erase(eIminus1);
+        t.remove(eIminus1);
 
-        HalfEdgeId ej = *t.lower_bound(v);
+        HalfEdgeId ej = t.get(dcel.getVertex(dcel.origin(v)).coords);
 
         if (isMergeVertex(dcel, helper[ej]))
         {
@@ -174,7 +159,7 @@ void handleVertex(DCEL &dcel, HalfEdgeId v)
         std::cerr << "\tis regular vertex" << std::endl;
         HalfEdgeId eIminus1 = dcel.prev(v);
 
-        if (liesToTheRightOfThePolygon(dcel, v))
+        if (!liesToTheRightOfThePolygon(dcel, v))
         {
             std::cerr << "\tv lies to the right of the polygon" << std::endl;
             std::cerr << "\teIminus1 " << dcel.getHalfEdge(eIminus1) << std::endl;
@@ -188,7 +173,7 @@ void handleVertex(DCEL &dcel, HalfEdgeId v)
                 std::cerr << "\thelper[eIminus1] is not merge vertex" << std::endl;
             }
 
-            t.erase(eIminus1);
+            t.remove(eIminus1);
             
             t.insert(v);
             helper[v] = v;
@@ -196,8 +181,15 @@ void handleVertex(DCEL &dcel, HalfEdgeId v)
         else
         {
             std::cerr << "\tv lies to the left of the polygon" << std::endl;
-            HalfEdgeId ej = *t.lower_bound(v);
-            std::cerr << "\tej " << dcel.getHalfEdge(ej) << std::endl;
+            HalfEdgeId ej = t.get(dcel.getVertex(dcel.origin(v)).coords);
+
+            if (ej == -1)
+            {
+                std::cerr << "ERRROR: \tej is -1" << std::endl;
+                exit(2123123);
+            }
+            std::cerr << "\thelper size lul " << helper.size() << std::endl;
+            std::cerr << "\tej " << ej << " " << dcel.getHalfEdge(ej) << std::endl;
             std::cerr << "\thelper[ej] " << dcel.getHalfEdge(helper[ej]) << std::endl;
             
             if (isMergeVertex(dcel, helper[ej]))
@@ -230,7 +222,7 @@ DCEL makeMonotone(std::vector<vec2> vertices) {
 
     std::priority_queue<HalfEdgeId, std::vector<HalfEdgeId>, decltype(pqCmp)> pq(pqCmp);
     
-    helper.resize(2 * vertices.size());
+    helper.resize(2 * vertices.size() + 1);
 
     VertexId start, curr;
     
