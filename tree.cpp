@@ -14,7 +14,7 @@ bool Tree::pointToTheRightOfEdge(vec2 point, HalfEdgeId he) {
     vec2 a = point - dcel.getVertex(dcel.origin(he)).coords;
     vec2 b = dcel.getVertex(dcel.origin(dcel.twin(he))).coords - dcel.getVertex(dcel.origin(he)).coords;
 
-    return det(a, b) > 0;
+    return det(a, b) < 0;
 }
 
 // returns if a is to the right of b
@@ -73,7 +73,7 @@ HalfEdgeId Tree::get(vec2 point)
     while (true)
     {
         if (current == nullptr)
-            return best;
+            break;
         
         if (pointToTheRightOfEdge(point, current->key))
         {
@@ -83,8 +83,6 @@ HalfEdgeId Tree::get(vec2 point)
         else
             current = current->left;
     }
-
-    std::cerr << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA " << std::endl;
 
     if (best == -1)
     {
@@ -208,9 +206,9 @@ void Tree::print()
             continue;
 
         for (int i = 0; i < indent; i++)
-            std::cout << " ";
+            std::cerr << " ";
 
-        std::cout << side << " " << current->key << " " << dcel.getHalfEdge(current->key) << std::endl;
+        std::cerr << side << " " << current->key << " " << dcel.getHalfEdge(current->key) << std::endl;
 
         s.push({current->left, 'L', indent + 2});
         s.push({current->right, 'R', indent + 2});

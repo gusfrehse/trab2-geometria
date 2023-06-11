@@ -88,6 +88,7 @@ Tree t(dcel);
 
 void handleVertex(DCEL &dcel, HalfEdgeId v)
 {
+    t.print();
     std::cerr << "Handling vertex " << dcel.origin(v) << " he " << v << std::endl;
     if (isStartVertex(dcel, v))
     {
