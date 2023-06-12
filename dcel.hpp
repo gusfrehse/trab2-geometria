@@ -28,7 +28,7 @@ struct DCELHalfEdge {
 };
 
 struct DCELFace {
-    HalfEdgeId incidentEdge = -1;
+    HalfEdgeId sampleEdge = -1;
 };
 
 class DCEL {
@@ -51,9 +51,11 @@ public:
 
     HalfEdgeId& incidentEdge(VertexId id) { return vertices[id].incidentEdge; };
     HalfEdgeId& next(HalfEdgeId id) { return halfEdges[id].next; }
-    HalfEdgeId& prev(HalfEdgeId id) { return halfEdges[id].prev;}
-    HalfEdgeId& twin(HalfEdgeId id) { return halfEdges[id].twin;}
-    VertexId& origin(HalfEdgeId id) { return halfEdges[id].origin;}
+    HalfEdgeId& prev(HalfEdgeId id) { return halfEdges[id].prev; }
+    HalfEdgeId& twin(HalfEdgeId id) { return halfEdges[id].twin; }
+    VertexId& origin(HalfEdgeId id) { return halfEdges[id].origin; }
+    HalfEdgeId& sampleEdge(FaceId id) { return faces[id].sampleEdge; } 
+    vec2& coords(VertexId id) { return vertices[id].coords; }
 
     void print();
 
