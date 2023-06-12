@@ -14,7 +14,7 @@ bool Tree::pointToTheRightOfEdge(vec2 point, HalfEdgeId he) {
     vec2 a = point - dcel.getVertex(dcel.origin(he)).coords;
     vec2 b = dcel.getVertex(dcel.origin(dcel.twin(he))).coords - dcel.getVertex(dcel.origin(he)).coords;
 
-    return det(a, b) < 0;
+    return det(a, b) <= 0;
 }
 
 // returns if a is to the right of b
@@ -25,16 +25,18 @@ bool Tree::edgeToTheRightOfEdge(HalfEdgeId a, HalfEdgeId b) {
     vec2 bCoord = dcel.getVertex(dcel.origin(b)).coords;
     vec2 bOpCoord = dcel.getVertex(dcel.origin(dcel.twin(b))).coords;
     
-    float maxY = std::max(aCoord.y, bCoord.y);
-    float minY = std::min(aOpCoord.y, bOpCoord.y);
+    double maxY = std::min(aCoord.y, bCoord.y);
+    double minY = std::max(aOpCoord.y, bOpCoord.y);
     
-    // guaranteed to intersect the two edges in the X axis
-    float y = (maxY + minY) / 2;
+    // guaranteed to intersect the two edges in a horizontal line
+    double y = (maxY + minY) / 2;
     
-    float ax = dcel.getXfromY(a, y);
-    float bx = dcel.getXfromY(b, y);
+    double ax = dcel.getXfromY(a, y);
+    double bx = dcel.getXfromY(b, y);
     
-    return ax > bx;
+    // TODO: something is wrong, changing from < to > keeps working...
+    // The error is probably in the getXfromY function
+    return ax < bx;
 }
 
 void Tree::insert(HalfEdgeId key) {
@@ -69,18 +71,32 @@ HalfEdgeId Tree::get(vec2 point)
     Node *current = root;
     HalfEdgeId best = -1;
 
+    std::cerr << "Getting edge for point: " << point << std::endl;
+    print();
+
     while (true)
     {
+        std::cerr << "current: " << (current ? current->key : -1) << std::endl;
         if (current == nullptr)
             break;
         
         if (pointToTheRightOfEdge(point, current->key))
         {
+            std::cerr << "point to the right" << std::endl;
             best = current->key;
             current = current->right;
         }
         else
+        {
+            std::cerr << "point to the left" << std::endl;
             current = current->left;
+        }
+    }
+
+    if (best == -1)
+    {
+        std::cerr << "ERROR: could not find edge" << std::endl;
+        assert(false);
     }
 
     return best;

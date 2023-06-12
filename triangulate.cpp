@@ -18,7 +18,6 @@ void readVertices(int n, std::vector<vec2>& vertices) {
     }
 }
 
-
 int main() {
     int n;
 
