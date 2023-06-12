@@ -30,6 +30,6 @@ int main() {
     DCEL dcel = makeMonotone(vertices);
 
     dcel.print();
-
+    
     return 0;
 }

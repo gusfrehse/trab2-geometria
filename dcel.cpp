@@ -15,6 +15,7 @@ DCEL::DCEL(std::vector<vec2> CCWConvexVertices) {
 void DCEL::insertVertices(std::vector<vec2> CCWConvexVertices) {
     vertices.resize(CCWConvexVertices.size());
     halfEdges.resize(2 * CCWConvexVertices.size());
+    faces.push_back({0});
     
     for (long unsigned int i = 0; i < CCWConvexVertices.size(); ++i) {
         vertices[i].coords = CCWConvexVertices[i];
@@ -69,6 +70,8 @@ void DCEL::connect(HalfEdgeId a, HalfEdgeId b) {
     HalfEdgeId y = halfEdges.size() - 1;
     HalfEdgeId c = prev(a);
     HalfEdgeId d = prev(b);
+
+    faces.push_back({y}); 
     
     next(x) = a;
     next(y) = b;

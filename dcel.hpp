@@ -10,6 +10,7 @@ struct DCELVertex;
 
 using HalfEdgeId = int;
 using VertexId = int;
+using FaceId = int;
 
 struct DCELVertex {
     vec2 coords;
@@ -26,10 +27,15 @@ struct DCELHalfEdge {
     friend std::ostream& operator<<(std::ostream& os, const DCELHalfEdge& halfEdge);
 };
 
+struct DCELFace {
+    HalfEdgeId incidentEdge = -1;
+};
+
 class DCEL {
     public:
     std::vector<DCELVertex> vertices;
     std::vector<DCELHalfEdge> halfEdges;
+    std::vector<DCELFace> faces;
 
     void insertVertices(std::vector<vec2> CCWConvexVertices);
     double getXfromY(HalfEdgeId a, double y);
