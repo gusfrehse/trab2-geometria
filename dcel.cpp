@@ -112,5 +112,6 @@ double DCEL::getXfromY(HalfEdgeId he, double y) {
     vec2 a = getVertex(origin(he)).coords;
     vec2 b = getVertex(origin(twin(he))).coords;
 
-    return (b.x * (a.y - y) - b.x * (b.y -y)) / (a.y - b.y);
+    // y - a.y = ((b.y - a.y) / (b.x - a.x)) * (x - a.x) <=> x = (y - a.y) * ((b.x - a.x) / (b.y - a.y)) + a.x
+    return (y - a.y) * ((b.x - a.x) / (b.y - a.y)) + a.x;
 }

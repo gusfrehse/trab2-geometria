@@ -33,10 +33,8 @@ bool Tree::edgeToTheRightOfEdge(HalfEdgeId a, HalfEdgeId b) {
     
     double ax = dcel.getXfromY(a, y);
     double bx = dcel.getXfromY(b, y);
-    
-    // TODO: something is wrong, changing from < to > keeps working...
-    // The error is probably in the getXfromY function
-    return ax < bx;
+
+    return ax > bx;
 }
 
 void Tree::insert(HalfEdgeId key) {
@@ -44,7 +42,7 @@ void Tree::insert(HalfEdgeId key) {
         root = new Node(key);
         return;
     }
-
+    
     Node *current = root;
 
     while (true) {
@@ -71,31 +69,25 @@ HalfEdgeId Tree::get(vec2 point)
     Node *current = root;
     HalfEdgeId best = -1;
 
-    std::cerr << "Getting edge for point: " << point << std::endl;
-    print();
-
     while (true)
     {
-        std::cerr << "current: " << (current ? current->key : -1) << std::endl;
         if (current == nullptr)
             break;
         
         if (pointToTheRightOfEdge(point, current->key))
         {
-            std::cerr << "point to the right" << std::endl;
             best = current->key;
             current = current->right;
         }
         else
         {
-            std::cerr << "point to the left" << std::endl;
             current = current->left;
         }
     }
 
     if (best == -1)
     {
-        std::cerr << "ERROR: could not find edge" << std::endl;
+        std::cerr << "ERROR: could not find edge left to (" << point << ")" << std::endl;
         assert(false);
     }
 
@@ -217,7 +209,7 @@ void Tree::print()
         for (int i = 0; i < indent; i++)
             std::cerr << " ";
 
-        std::cerr << side << " " << current->key << " " << dcel.getHalfEdge(current->key) << std::endl;
+        std::cerr << side << " " << current->key << " " << dcel.getHalfEdge(current->key) << " " << dcel.getVertex(dcel.origin(current->key)).coords << std::endl;
 
         s.push({current->left, 'L', indent + 2});
         s.push({current->right, 'R', indent + 2});
