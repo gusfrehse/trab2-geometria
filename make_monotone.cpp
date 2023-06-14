@@ -180,15 +180,15 @@ DCEL makeMonotone(std::vector<vec2> vertices) {
     // Add vertices (which are identified by a edge which they are the origin to) to queue
     start = curr = dcel.start();
     do {
-        pq.push(curr);
+        pq.push(dcel.origin(curr));
         curr = dcel.next(curr);
     } while (curr != start);
 
     while (!pq.empty()) {
-        HalfEdgeId v = pq.top();
+        VertexId v = pq.top();
         pq.pop();
 
-        handleVertex(dcel, v);
+        handleVertex(dcel, dcel.getVertex(v).incidentEdge);
     }
     
     return dcel;

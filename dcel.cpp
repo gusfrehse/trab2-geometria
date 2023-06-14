@@ -4,6 +4,8 @@
 
 #include <vector>
 
+#include <cassert>
+
 int realMod(int a, int b) {
     return (a % b + b) % b;
 }
@@ -90,6 +92,9 @@ void DCEL::connect(HalfEdgeId a, HalfEdgeId b) {
 
     origin(x) = origin(b);
     origin(y) = origin(a);
+    
+    getVertex(origin(x)).incidentEdge = x;
+    getVertex(origin(y)).incidentEdge = y;
 }
 
 void DCEL::print() {

@@ -30,7 +30,7 @@ int main() {
 
     DCEL dcel = makeMonotone(vertices);
 
-    triangulateMonotone(dcel);
+    //triangulateMonotone(dcel);
 
     dcel.print();
     

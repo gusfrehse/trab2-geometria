@@ -36,11 +36,23 @@ std::vector<std::pair<HalfEdgeId, int>> mergeVertices(DCEL &dcel, FaceId face)
     std::cerr << "Merging vertices..." << std::endl;
     std::vector<std::pair<HalfEdgeId, int>> u;
     HalfEdgeId he = topMostVertex(dcel, face);
-    HalfEdgeId eh = he;
+    HalfEdgeId eh = dcel.prev(he);
+    
+    
+    HalfEdgeId current = he;
+    do
+    {
+        std::cerr << current << " " << dcel.getHalfEdge(current) << " from " << dcel.origin(current) << " to (twin) " << dcel.origin(dcel.twin(current)) << " or (next) " << dcel.origin(dcel.next(current)) << std::endl;
+        current = dcel.next(current);
+    }
+    while (current != he);
+
+    exit(0);
     
     // Merge vertices in decreasing y
     do
     {
+        std::cerr << "Analyzing " << dcel.coords(dcel.origin(he)) << " and " <<  dcel.coords(dcel.origin(he)) << std::endl;
         if (dcel.coords(dcel.origin(he)).y >= dcel.coords(dcel.origin(eh)).y)
         {
             u.push_back({he, 0});
