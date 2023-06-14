@@ -9,6 +9,7 @@
 #include "util.hpp"
 #include "make_monotone.hpp"
 #include "dcel.hpp"
+#include "triangulate_monotone.hpp"
 
 void readVertices(int n, std::vector<vec2>& vertices) {
     vertices.resize(n);
@@ -28,6 +29,8 @@ int main() {
     readVertices(n, vertices);
 
     DCEL dcel = makeMonotone(vertices);
+
+    triangulateMonotone(dcel);
 
     dcel.print();
     
