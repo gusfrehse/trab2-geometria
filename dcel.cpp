@@ -97,7 +97,57 @@ void DCEL::connect(HalfEdgeId a, HalfEdgeId b) {
     getVertex(origin(y)).incidentEdge = y;
 }
 
-void DCEL::print() {
+bool isInsideTriangle(vec2 a, vec2 b, vec2 c, vec2 p) {
+    vec2 v0 = c - a;
+    vec2 v1 = b - a;
+    vec2 v2 = p - a;
+
+    double dot00 = dot(v0, v0);
+    double dot01 = dot(v0, v1);
+    double dot02 = dot(v0, v2);
+    double dot11 = dot(v1, v1);
+    double dot12 = dot(v1, v2);
+
+    double den = (dot00 * dot11 - dot01 * dot01);
+
+    double u = (dot11 * dot02 - dot01 * dot12) / den;
+    double v = (dot00 * dot12 - dot01 * dot02) / den;
+
+    return (u >= 0) && (v >= 0) && (u + v < 1);
+}
+
+bool DCEL::isEar(HalfEdgeId id)
+{
+    if (next(next(id)) == id)
+        return false; 
+
+    vec2 currCoords = coords(origin(id));
+    vec2 nextCoords = coords(origin(next(id)));
+    vec2 prevCoords = coords(origin(prev(id)));
+
+    double detVal = det(prevCoords - currCoords, nextCoords - currCoords);
+
+    if (detVal > 0)
+        return false;
+    
+    HalfEdgeId start = next(id);
+    HalfEdgeId current = start;
+    while (prev(start) != current)
+    {
+        if (isInsideTriangle(currCoords, nextCoords, prevCoords, coords(origin(current))))
+        {
+            return false;
+        }
+
+        current = next(current);
+    }
+    
+    
+    return true;
+}
+
+void DCEL::print()
+{
     std::cout << vertices.size() << " " << halfEdges.size() / 2 <<  "\n";
 
     // print vertices

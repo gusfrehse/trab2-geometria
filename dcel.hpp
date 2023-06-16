@@ -56,6 +56,7 @@ public:
     VertexId& origin(HalfEdgeId id) { return halfEdges[id].origin; }
     HalfEdgeId& sampleEdge(FaceId id) { return faces[id].sampleEdge; } 
     vec2& coords(VertexId id) { return vertices[id].coords; }
+    bool isEar(HalfEdgeId id);
 
     void print();
 
