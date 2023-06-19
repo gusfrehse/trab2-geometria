@@ -42,6 +42,18 @@ public:
         return *this;
     }
 
+    vec2& operator*=(const double& rhs) {
+        x *= rhs;
+        y *= rhs;
+        return *this;
+    }
+
+    vec2& operator/=(const double& rhs) {
+        x /= rhs;
+        y /= rhs;
+        return *this;
+    }
+
     friend vec2 operator+(vec2 lhs, const vec2 rhs) {
         lhs += rhs;
         return lhs;
@@ -49,6 +61,16 @@ public:
 
     friend vec2 operator-(vec2 lhs, const vec2 rhs) {
         lhs -= rhs;
+        return lhs;
+    }
+
+    friend vec2 operator*(vec2 lhs, const double rhs) {
+        lhs *= rhs;
+        return lhs;
+    }
+
+    friend vec2 operator/(vec2 lhs, const double rhs) {
+        lhs /= rhs;
         return lhs;
     }
     

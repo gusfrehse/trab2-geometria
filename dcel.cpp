@@ -22,7 +22,6 @@ void DCEL::insertVertices(std::vector<vec2> CCWConvexVertices) {
     for (long unsigned int i = 0; i < CCWConvexVertices.size(); ++i) {
         vertices[i].coords = CCWConvexVertices[i];
         vertices[i].incidentEdge = 2 * i;
-        vertices[i].id = i;
 
         halfEdges[2 * i].origin = i;
         halfEdges[2 * i].twin = 2 * i + 1;
@@ -36,65 +35,9 @@ void DCEL::insertVertices(std::vector<vec2> CCWConvexVertices) {
     }
 }
 
-HalfEdgeId DCEL::start() {
+HalfEdgeId DCEL::start()
+{
     return 0;
-}
-
-DCELVertex& DCEL::getVertex(VertexId id)
-{
-    return vertices[id];
-}
-
-DCELHalfEdge& DCEL::getHalfEdge(HalfEdgeId id)
-{
-    return halfEdges[id];
-}
-
-
-/*          c
-    * <--------------- *
-    | \\               ^
-    |   \\             |
-    |     \\           |
-   a|      x\\y       b|
-    |         \\       |
-    |           \\     |
-    |             \\   |
-    v               \\ |
-    * ---------------> * 
-            d
-*/
-void DCEL::connect(HalfEdgeId a, HalfEdgeId b) {
-    halfEdges.push_back({});
-    halfEdges.push_back({});
-
-    HalfEdgeId x = halfEdges.size() - 2;
-    HalfEdgeId y = halfEdges.size() - 1;
-    HalfEdgeId c = prev(a);
-    HalfEdgeId d = prev(b);
-
-    faces.push_back({y}); 
-    
-    next(x) = a;
-    next(y) = b;
-    
-    prev(x) = d;
-    prev(y) = c;
-
-    next(d) = x;
-    next(c) = y;
-
-    prev(a) = x;
-    prev(b) = y;
-    
-    twin(x) = y;
-    twin(y) = x;
-
-    origin(x) = origin(b);
-    origin(y) = origin(a);
-    
-    getVertex(origin(x)).incidentEdge = x;
-    getVertex(origin(y)).incidentEdge = y;
 }
 
 bool isInsideTriangle(vec2 a, vec2 b, vec2 c, vec2 p) {
@@ -116,6 +59,7 @@ bool isInsideTriangle(vec2 a, vec2 b, vec2 c, vec2 p) {
     return (u >= 0) && (v >= 0) && (u + v < 1);
 }
 
+// O(n)
 bool DCEL::isEar(HalfEdgeId id)
 {
     if (next(next(id)) == id)
@@ -142,8 +86,81 @@ bool DCEL::isEar(HalfEdgeId id)
         current = next(current);
     }
     
-    
     return true;
+}
+
+// O(n * n)
+void DCEL::setupEars()
+{
+    HalfEdgeId first = start();
+    HalfEdgeId current = first;
+
+    do
+    {
+        ear(current) = isEar(current);
+        current = next(current);
+    }
+    while (current != first);
+}
+
+DCELVertex& DCEL::getVertex(VertexId id)
+{
+    return vertices[id];
+}
+
+DCELHalfEdge& DCEL::getHalfEdge(HalfEdgeId id)
+{
+    return halfEdges[id];
+}
+
+
+/*          c
+    * <--------------- *
+    | \\               ^
+    |   \\             |
+    |     \\           |
+   a|      x\\y       b|
+    |         \\       |
+    |           \\     |
+    |             \\   |
+    v               \\ |
+    * ---------------> * 
+            d
+*/
+FaceId DCEL::connect(HalfEdgeId a, HalfEdgeId b) {
+    halfEdges.push_back({});
+    halfEdges.push_back({});
+
+    HalfEdgeId x = halfEdges.size() - 2;
+    HalfEdgeId y = halfEdges.size() - 1;
+    HalfEdgeId c = prev(a);
+    HalfEdgeId d = prev(b);
+    
+    next(x) = a;
+    next(y) = b;
+    
+    prev(x) = d;
+    prev(y) = c;
+
+    next(d) = x;
+    next(c) = y;
+
+    prev(a) = x;
+    prev(b) = y;
+    
+    twin(x) = y;
+    twin(y) = x;
+
+    origin(x) = origin(b);
+    origin(y) = origin(a);
+    
+    getVertex(origin(x)).incidentEdge = x;
+    getVertex(origin(y)).incidentEdge = y;
+
+    faces.push_back({y}); 
+    incidentFace(x) = faces.size() - 1;
+
+    return faces.size() - 1;
 }
 
 void DCEL::print()
@@ -162,7 +179,7 @@ void DCEL::print()
 }
 
 std::ostream& operator<<(std::ostream& os, const DCELHalfEdge& halfEdge) {
-    os << "HalfEdge { origin = " << halfEdge.origin << ", twin  = " << halfEdge.twin << ", next = " << halfEdge.next << ", prev = " << halfEdge.prev << " }";
+    os << "HalfEdge { origin = " << halfEdge.origin << ", twin = " << halfEdge.twin << ", next = " << halfEdge.next << ", prev = " << halfEdge.prev << ", ear = " << halfEdge.ear << " }";
     return os;
 }
 

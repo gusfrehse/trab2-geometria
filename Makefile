@@ -1,6 +1,6 @@
 CC = g++
 CXX = g++
-CXXFLAGS += -Wall -Wextra -Wpedantic  -pedantic-errors -O0 -g -std=c++20
+CXXFLAGS += -Wall -Wextra -O0 -g -std=c++20
 OBJS = triangulate.o dcel.o 
 
 triangulate : $(OBJS)
