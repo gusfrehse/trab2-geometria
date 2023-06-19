@@ -1,0 +1,47 @@
+% vim: set tw=80 ts=2 sts=2 sw=2 et:
+\documentclass[12pt]{article}
+
+\usepackage{mathtools}
+\usepackage{amsfonts}
+\usepackage{hyperref}
+
+\title{Trabalho 2 de Geometria Computacional}
+\author{Gustavo Silveira Frehse GRR20203927}
+\begin{document}
+  \maketitle
+  \section{O Problema}
+  Dados os $n$ vértices de um polígono, queremos gerar uma triangulação dele.
+  
+  \section{Algoritmo}
+  Usamos o algoritmo de cortar orelhas, descrito em \cite{earcut} e com tempo
+  $O(n^2)$. 
+
+  Utilizamos uma DCEL para representar o polígono, assim temos a operação de
+  adicionar diagonais em tempo constante.
+  
+  \subsection{Pré-processamento}
+  O algoritmo consiste primeiramente em pré-processar os vértices, guardando se
+  cada vértice é uma orelha.
+  
+  Para descobrir se um $v_i$ vértice é uma orelha, para todos vértices $v_j$ no
+  polígono checamos se $v_j$ está no triângulo formado por $v_{i-1}, v_i,
+  v_{i+1}$, sendo $v_{i-1}$ e $v_{i+1}$ os vizinhos de $v_i$. Se $v_j$ está
+  dentro do triângulo, $v_i$ não é orelha. Assim essa operação é $O(n)$.
+  
+  Como fazemos isso para todos os vértices, o pré-processamento é $O(n^2)$.
+  
+  \subsection{Cortar Orelhas}
+  No algoritmo, caminhamos pelos vértices, se $v_i$ é orelha, adicionamos a
+  diagonal $v_{i-1}, v_{i+1}$. Como os únicos vértices que podem mudar seus
+  status como orelha são $v_{i-1}$ e $v_{i+1}$, recalculamos se $v_{i-1}$ e
+  $v_{i+1}$ são orelha.
+  
+  Como o número de diagonais é $n-3$, e para cada diagonal calculamos duas vezes
+  se é um vértice é orelha, o algoritmo é $O((n - 3) * (2n)) = O(n^2)$.
+
+  \begin{thebibliography}{9}
+    \bibitem{earcut} O'Rourke, J. (1998). Computational Geometry in C (2nd ed.).
+  \end{thebibliography}
+
+
+\end{document}

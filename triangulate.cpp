@@ -9,11 +9,30 @@
 #include "util.hpp"
 #include "dcel.hpp"
 
-void readVertices(int n, std::vector<vec2>& vertices) {
+bool isCCW(const std::vector<vec2>& vertices)
+{
+    double sum = 0;
+    for (unsigned long int i = 0; i < vertices.size(); ++i)
+    {
+        sum += det(vertices[i], vertices[(i + 1) % vertices.size()]);
+    }
+    return sum > 0;
+}
+
+void readVertices(int n, std::vector<vec2>& vertices)
+{
     vertices.resize(n);
 
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i)
+    {
         vertices[i] = vec2::read();
+    }
+    
+    // Check if is in counter clockwise and reverse if it's not
+    if (!isCCW(vertices))
+    {
+        std::cerr << "CLOCKWISE" << std::endl;
+        std::reverse(vertices.begin(), vertices.end());
     }
 }
 
@@ -104,7 +123,12 @@ int main() {
     std::cout << triangles.size() << std::endl;
     for (auto &triangle : triangles)
     {
-        std::cout << triangle.v0 + 1 << " " << triangle.v1 + 1 << " " << triangle.v2 + 1 << " " << triangle.f0 + 1 << " " << triangle.f1 + 1 << " " << triangle.f2 + 1 << std::endl;
+        if (std::min({triangle.v0, triangle.v1, triangle.v2}) == triangle.v0)
+            std::cout << triangle.v0 + 1 << " " << triangle.v2 + 1 << " " << triangle.v1 + 1 << " " << triangle.f0 + 1 << " " << triangle.f2 + 1 << " " << triangle.f1 + 1 << std::endl;
+        else if (std::min({triangle.v0, triangle.v1, triangle.v2}) == triangle.v1)
+            std::cout << triangle.v1 + 1 << " " << triangle.v0 + 1 << " " << triangle.v2 + 1 << " " << triangle.f1 + 1 << " " << triangle.f0 + 1 << " " << triangle.f2 + 1 << std::endl;
+        else if (std::min({triangle.v0, triangle.v1, triangle.v2}) == triangle.v2)
+            std::cout << triangle.v2 + 1 << " " << triangle.v1 + 1 << " " << triangle.v0 + 1 << " " << triangle.f2 + 1 << " " << triangle.f1 + 1 << " " << triangle.f0 + 1 << std::endl;
     }
 
     //dcel.print();
